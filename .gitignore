@@ -361,3 +361,14 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Deploy artifacts (large files)
+deploy/
+deploy.rar
+*.tar
+
+# Log files
+*.log
+err.txt
+api-err*.txt
+docker-err.txt
+msbuild.log
