@@ -18,7 +18,8 @@
       "Bash(find g:/Projetos/Breno/07-03-2026/src/Infrastructure/Persistence -name *.cs)",
       "Bash(find g:/Projetos/Breno/07-03-2026/tests -name *.cs)",
       "Bash(find g:/Projetos/Breno/07-03-2026 -name Directory.Build.props -o -name Directory.Build.targets -o -name *.sln)",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(gh pr:*)"
     ]
   }
 }
