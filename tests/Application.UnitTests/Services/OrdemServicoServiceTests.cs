@@ -18,7 +18,7 @@ public class OrdemServicoServiceTests
         clienteRepo.Setup(x => x.ObterPorIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Cliente?)null);
 
-        var sut = new OrdemServicoService(osRepo.Object, clienteRepo.Object, uow.Object);
+        var sut = new OrdemServicoService(osRepo.Object, clienteRepo.Object, uow.Object, Microsoft.Extensions.Logging.Abstractions.NullLogger<OrdemServicoService>.Instance);
         var request = new CriarOrdemServicoRequest(Guid.NewGuid(), null, "Nao liga", "2h", null, null, null, null);
 
         await Assert.ThrowsAsync<DomainException>(() => sut.CriarAsync(request));
@@ -39,7 +39,7 @@ public class OrdemServicoServiceTests
             .ReturnsAsync(1);
         uow.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-        var sut = new OrdemServicoService(osRepo.Object, clienteRepo.Object, uow.Object);
+        var sut = new OrdemServicoService(osRepo.Object, clienteRepo.Object, uow.Object, Microsoft.Extensions.Logging.Abstractions.NullLogger<OrdemServicoService>.Instance);
         var request = new CriarOrdemServicoRequest(Guid.NewGuid(), null, "Nao liga", "2h", null, null, null, null);
 
         var response = await sut.CriarAsync(request);
@@ -59,7 +59,7 @@ public class OrdemServicoServiceTests
         osRepo.Setup(x => x.ObterPorIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((OrdemServico?)null);
 
-        var sut = new OrdemServicoService(osRepo.Object, clienteRepo.Object, uow.Object);
+        var sut = new OrdemServicoService(osRepo.Object, clienteRepo.Object, uow.Object, Microsoft.Extensions.Logging.Abstractions.NullLogger<OrdemServicoService>.Instance);
 
         await Assert.ThrowsAsync<DomainException>(() =>
             sut.AdicionarServicoAsync(Guid.NewGuid(), new AdicionarServicoRequest("Servico", 1, 10m)));

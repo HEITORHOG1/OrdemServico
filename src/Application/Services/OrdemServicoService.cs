@@ -7,20 +7,23 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
-public sealed class OrdemServicoService : IOrdemServicoService
+public sealed partial class OrdemServicoService : IOrdemServicoService
 {
     private readonly IOrdemServicoRepository _osRepository;
     private readonly IClienteRepository _clienteRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<OrdemServicoService> _logger;
 
-    public OrdemServicoService(IOrdemServicoRepository osRepository, IClienteRepository clienteRepository, IUnitOfWork unitOfWork)
+    public OrdemServicoService(IOrdemServicoRepository osRepository, IClienteRepository clienteRepository, IUnitOfWork unitOfWork, ILogger<OrdemServicoService> logger)
     {
         _osRepository = osRepository;
         _clienteRepository = clienteRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<OrdemServicoResponse> CriarAsync(CriarOrdemServicoRequest request, CancellationToken cancellationToken = default)
@@ -46,6 +49,8 @@ public sealed class OrdemServicoService : IOrdemServicoService
 
         await _osRepository.AdicionarAsync(os, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);
+
+        LogOsCriada(_logger, numeroOs.Valor, request.ClienteId);
 
         return os.ToResponse();
     }
@@ -123,6 +128,9 @@ public sealed class OrdemServicoService : IOrdemServicoService
 
         os.AdicionarPagamento(request.Meio, request.Valor, request.DataPagamento);
         await Guardar(os, cancellationToken);
+
+        var meioPagamento = request.Meio.ToString();
+        LogPagamentoRegistrado(_logger, request.Valor, id, meioPagamento);
     }
 
     public async Task AdicionarAnotacaoAsync(Guid id, AdicionarAnotacaoRequest request, CancellationToken cancellationToken = default)
@@ -156,6 +164,9 @@ public sealed class OrdemServicoService : IOrdemServicoService
             default: break;
         }
 
+        var novoStatusNome = request.NovoStatus.ToString();
+        LogStatusAlterado(_logger, id, novoStatusNome);
+
         await Guardar(os, cancellationToken);
     }
 
@@ -188,4 +199,13 @@ public sealed class OrdemServicoService : IOrdemServicoService
                 "A Ordem de Servico foi alterada por outro processo. Recarregue a tela e tente novamente.");
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "OS {NumeroOS} criada para cliente {ClienteId}")]
+    private static partial void LogOsCriada(ILogger logger, string numeroOS, Guid clienteId);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Pagamento de {Valor} registrado na OS {OsId} via {Meio}")]
+    private static partial void LogPagamentoRegistrado(ILogger logger, decimal valor, Guid osId, string meio);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Status da OS {OsId} alterado para {NovoStatus}")]
+    private static partial void LogStatusAlterado(ILogger logger, Guid osId, string novoStatus);
 }

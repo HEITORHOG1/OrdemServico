@@ -4,18 +4,21 @@ using Application.Interfaces;
 using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
-public sealed class ClienteService : IClienteService
+public sealed partial class ClienteService : IClienteService
 {
     private readonly IClienteRepository _clienteRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<ClienteService> _logger;
 
-    public ClienteService(IClienteRepository clienteRepository, IUnitOfWork unitOfWork)
+    public ClienteService(IClienteRepository clienteRepository, IUnitOfWork unitOfWork, ILogger<ClienteService> logger)
     {
         _clienteRepository = clienteRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<ClienteResponse> CriarAsync(CriarClienteRequest request, CancellationToken cancellationToken = default)
@@ -31,6 +34,8 @@ public sealed class ClienteService : IClienteService
         await _clienteRepository.AdicionarAsync(cliente, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);
 
+        LogClienteCriado(_logger, cliente.Id, cliente.Nome);
+
         return cliente.ToResponse();
     }
 
@@ -45,4 +50,7 @@ public sealed class ClienteService : IClienteService
         var clientes = await _clienteRepository.BuscarPorNomeAsync(nome, cancellationToken);
         return clientes.Select(c => c.ToResponse());
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Cliente {ClienteId} criado com nome {ClienteNome}")]
+    private static partial void LogClienteCriado(ILogger logger, Guid clienteId, string clienteNome);
 }

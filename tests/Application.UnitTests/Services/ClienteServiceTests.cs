@@ -18,7 +18,7 @@ public class ClienteServiceTests
         clienteRepo.Setup(x => x.ExistePorDocumentoAsync("123", It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        var sut = new ClienteService(clienteRepo.Object, uow.Object);
+        var sut = new ClienteService(clienteRepo.Object, uow.Object, Microsoft.Extensions.Logging.Abstractions.NullLogger<ClienteService>.Instance);
         var request = new CriarClienteRequest("Cliente", "123", null, null, null);
 
         await Assert.ThrowsAsync<DomainException>(() => sut.CriarAsync(request));
@@ -32,7 +32,7 @@ public class ClienteServiceTests
         var uow = new Mock<IUnitOfWork>();
         uow.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-        var sut = new ClienteService(clienteRepo.Object, uow.Object);
+        var sut = new ClienteService(clienteRepo.Object, uow.Object, Microsoft.Extensions.Logging.Abstractions.NullLogger<ClienteService>.Instance);
         var request = new CriarClienteRequest("Cliente", "123", null, null, null);
 
         var response = await sut.CriarAsync(request);
@@ -50,7 +50,7 @@ public class ClienteServiceTests
         clienteRepo.Setup(x => x.ObterPorIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Cliente?)null);
 
-        var sut = new ClienteService(clienteRepo.Object, uow.Object);
+        var sut = new ClienteService(clienteRepo.Object, uow.Object, Microsoft.Extensions.Logging.Abstractions.NullLogger<ClienteService>.Instance);
 
         var response = await sut.ObterPorIdAsync(Guid.NewGuid());
 
