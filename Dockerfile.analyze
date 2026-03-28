@@ -1,0 +1,39 @@
+# ============================================
+# Dockerfile de Análise Crítica (.NET 9)
+# Build: restore + compile
+# Run: testes, arquitetura, padrões, segurança, métricas
+# ============================================
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS analyze
+WORKDIR /src
+
+# Copia props globais e solution (cache de restore)
+COPY Directory.Build.props .
+COPY OrdemServico.sln .
+
+# Copia todos os csprojs para restore
+COPY src/Domain/Domain.csproj src/Domain/
+COPY src/Application/Application.csproj src/Application/
+COPY src/Infrastructure/Infrastructure.csproj src/Infrastructure/
+COPY src/Api/Api.csproj src/Api/
+COPY src/Web/Web.csproj src/Web/
+COPY tests/Domain.UnitTests/Domain.UnitTests.csproj tests/Domain.UnitTests/
+COPY tests/Application.UnitTests/Application.UnitTests.csproj tests/Application.UnitTests/
+COPY tests/Web.UnitTests/Web.UnitTests.csproj tests/Web.UnitTests/
+COPY tests/Api.IntegrationTests/Api.IntegrationTests.csproj tests/Api.IntegrationTests/
+
+RUN dotnet restore OrdemServico.sln
+
+# Copia todo o source
+COPY src/ src/
+COPY tests/ tests/
+
+# Build Release (etapa unica no build)
+RUN dotnet build OrdemServico.sln -c Release --no-restore \
+      /p:EnforceCodeStyleInBuild=true \
+      /p:AnalysisLevel=latest-recommended
+
+# Script de análise que roda ao iniciar o container
+COPY analyze.sh /src/analyze.sh
+RUN chmod +x /src/analyze.sh
+
+ENTRYPOINT ["/src/analyze.sh"]

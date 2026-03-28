@@ -1,0 +1,551 @@
+@page "/ordens-servico/detalhe/{Id:guid}"
+@rendermode InteractiveServer
+@using Radzen
+@using Radzen.Blazor
+@using Web.Models
+@using Web.Services.Ui
+@using Web.State
+@using Web.ViewModels.OrdensServico
+@inject OrdemServicoDetalheViewModel ViewModel
+@inject IAppNotifier AppNotifier
+@inject NavigationManager NavigationManager
+
+<PageTitle>Detalhe OS - OS Web</PageTitle>
+
+@if (ViewModel.IsLoading)
+{
+    <div class="os-busy-block">
+        <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 280px" />
+        <span class="os-busy-label">Carregando detalhe da ordem de servico...</span>
+    </div>
+}
+else if (!string.IsNullOrWhiteSpace(ViewModel.ErrorMessage) && ViewModel.Detalhe is null)
+{
+    <div class="os-card" style="text-align: center; padding: 3rem;">
+        <span class="material-icons" style="font-size: 3rem; color: var(--os-danger);">error_outline</span>
+        <h3 style="margin: 1rem 0 0.5rem;">Erro ao carregar</h3>
+        <p style="color: var(--os-text-muted);">@ViewModel.ErrorMessage</p>
+        <RadzenButton Text="Voltar para lista" Icon="arrow_back" ButtonStyle="ButtonStyle.Light"
+                      Click="@(_ => NavigationManager.NavigateTo("/ordens-servico/lista"))" />
+    </div>
+}
+else if (ViewModel.Detalhe is not null)
+{
+    @if (ViewModel.IsSubmitting)
+    {
+        <div class="os-busy-block">
+            <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 280px" />
+            <span class="os-busy-label">Processando...</span>
+        </div>
+    }
+
+    <!-- Header -->
+    <div class="os-card" style="border-left: 4px solid @GetStatusColor(ViewModel.Detalhe.Status);">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <h1 class="os-page-title" style="margin: 0;">@ViewModel.Detalhe.Numero</h1>
+                    <span class="os-status-badge @GetStatusClass(ViewModel.Detalhe.Status)">@FormatStatus(ViewModel.Detalhe.Status)</span>
+                </div>
+                <p style="color: var(--os-text-muted); margin: 0; font-size: 0.875rem;">
+                    <span class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">person</span>
+                    Cliente: <code>@ViewModel.Detalhe.ClienteId</code>
+                    @if (ViewModel.Detalhe.EquipamentoId.HasValue)
+                    {
+                        <span style="margin-left: 1rem;">
+                            <span class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">devices</span>
+                            Equipamento: <code>@ViewModel.Detalhe.EquipamentoId</code>
+                        </span>
+                    }
+                </p>
+            </div>
+            <RadzenButton Text="Voltar" Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                          Click="@(_ => NavigationManager.NavigateTo("/ordens-servico/lista"))" />
+        </div>
+
+        <div style="margin-top: 0.75rem; padding: 0.75rem; background: var(--os-bg); border-radius: var(--os-radius);">
+            <strong style="font-size: 0.8rem; color: var(--os-text-muted);">DEFEITO RELATADO</strong>
+            <p style="margin: 0.25rem 0 0; font-size: 0.925rem;">@ViewModel.Detalhe.Defeito</p>
+        </div>
+    </div>
+
+    <!-- Status Actions -->
+    <div class="os-card">
+        <h4 class="os-section-title">
+            <span class="material-icons">swap_horiz</span>
+            Acoes de Status
+        </h4>
+        <div class="os-page-actions">
+            @if (ViewModel.PodeEnviarOrcamento)
+            {
+                <RadzenButton Text="Enviar Orcamento" Icon="send" ButtonStyle="ButtonStyle.Info" Disabled="@ViewModel.IsSubmitting" Click="@OnEnviarOrcamentoAsync" />
+            }
+            @if (ViewModel.PodeAprovar)
+            {
+                <RadzenButton Text="Aprovar" Icon="thumb_up" ButtonStyle="ButtonStyle.Success" Disabled="@ViewModel.IsSubmitting" Click="@OnAprovarAsync" />
+            }
+            @if (ViewModel.PodeRejeitar)
+            {
+                <RadzenButton Text="Rejeitar" Icon="thumb_down" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Disabled="@ViewModel.IsSubmitting" Click="@OnRejeitarAsync" />
+            }
+            @if (ViewModel.PodeIniciarAndamento)
+            {
+                <RadzenButton Text="Iniciar Andamento" Icon="play_arrow" ButtonStyle="ButtonStyle.Warning" Disabled="@ViewModel.IsSubmitting" Click="@OnIniciarAndamentoAsync" />
+            }
+            @if (ViewModel.PodeConcluir)
+            {
+                <RadzenButton Text="Concluir" Icon="task_alt" ButtonStyle="ButtonStyle.Success" Disabled="@ViewModel.IsSubmitting" Click="@OnConcluirAsync" />
+            }
+            @if (ViewModel.PodeEntregar)
+            {
+                <RadzenButton Text="Entregar" Icon="local_shipping" ButtonStyle="ButtonStyle.Success" Disabled="@ViewModel.IsSubmitting" Click="@OnEntregarAsync" />
+            }
+        </div>
+
+        <!-- Status Timeline -->
+        <div class="os-status-timeline mt-3">
+            @{ var statusList = ViewModel.StatusTimelineOrder; }
+            @for (int i = 0; i < statusList.Count; i++)
+            {
+                var s = statusList[i];
+                var isCurrent = ViewModel.Detalhe.Status == s;
+                var isPast = (int)s < (int)ViewModel.Detalhe.Status && s != StatusOsModel.Rejeitada;
+                var cssClass = isCurrent ? "active" : (isPast ? "completed" : "");
+
+                <span class="os-timeline-step @cssClass">
+                    @if (isPast) { <span class="material-icons" style="font-size: 0.85rem;">check</span> }
+                    @FormatStatus(s)
+                </span>
+
+                @if (i < statusList.Count - 1)
+                {
+                    <span class="material-icons os-timeline-arrow">chevron_right</span>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="os-card">
+        <h4 class="os-section-title">
+            <span class="material-icons">payments</span>
+            Resumo Financeiro
+        </h4>
+
+        <div class="os-financial-grid">
+            <div class="os-financial-item">
+                <div class="os-financial-label">Servicos</div>
+                <div class="os-financial-value">@FormatCurrency(ViewModel.SubtotalServicos)</div>
+            </div>
+            <div class="os-financial-item">
+                <div class="os-financial-label">Produtos</div>
+                <div class="os-financial-value">@FormatCurrency(ViewModel.SubtotalProdutos)</div>
+            </div>
+            <div class="os-financial-item">
+                <div class="os-financial-label">Taxas</div>
+                <div class="os-financial-value">@FormatCurrency(ViewModel.SubtotalTaxas)</div>
+            </div>
+            <div class="os-financial-item">
+                <div class="os-financial-label">Desconto</div>
+                <div class="os-financial-value text-danger">-@FormatCurrency(ViewModel.DescontoAplicado)</div>
+            </div>
+            <div class="os-financial-item" style="background: var(--os-primary-light);">
+                <div class="os-financial-label">Total Final</div>
+                <div class="os-financial-value text-primary">@FormatCurrency(ViewModel.TotalFinal)</div>
+            </div>
+            <div class="os-financial-item">
+                <div class="os-financial-label">Pago</div>
+                <div class="os-financial-value text-success">@FormatCurrency(ViewModel.ValorPago)</div>
+            </div>
+            <div class="os-financial-item">
+                <div class="os-financial-label">Saldo Restante</div>
+                <div class="os-financial-value @(ViewModel.SaldoRestante > 0 ? "text-danger" : "text-success")">
+                    @FormatCurrency(ViewModel.SaldoRestante)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(ViewModel.ErrorMessage))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" ShowIcon="true" Shade="Shade.Lighter" class="mb-3">@ViewModel.ErrorMessage</RadzenAlert>
+    }
+
+    @if (ViewModel.IsEdicaoBloqueadaAposEnvio)
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true" Shade="Shade.Lighter" class="mb-3">
+            <div class="d-flex align-items-center gap-1">
+                <span class="material-icons" style="font-size: 1rem;">lock</span>
+                Edicao de itens bloqueada apos envio para Orcamento.
+            </div>
+        </RadzenAlert>
+    }
+
+    <!-- Tabs -->
+    <RadzenTabs RenderMode="TabRenderMode.Client" Style="margin-bottom: 2rem;">
+        <Tabs>
+            <!-- SERVICOS -->
+            <RadzenTabsItem Text="Servicos" Icon="build">
+                <div class="os-card" style="box-shadow: none; border: none; padding: 0; margin: 0;">
+                    @if (!ViewModel.IsEdicaoBloqueadaAposEnvio)
+                    {
+                        <RadzenTemplateForm TItem="OrdemServicoComposicaoItemFormModel" Data="@ViewModel.ServicoForm" Submit="@OnAdicionarServicoAsync">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <RadzenFormField Text="Descricao" Style="width:100%">
+                                        <RadzenTextBox Name="ServicoDescricao" @bind-Value="ViewModel.ServicoForm.Descricao" Placeholder="Nome do servico" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-2">
+                                    <RadzenFormField Text="Qtd" Style="width:100%">
+                                        <RadzenNumeric Name="ServicoQuantidade" TValue="int" @bind-Value="ViewModel.ServicoForm.Quantidade" Min="1" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-3">
+                                    <RadzenFormField Text="Valor Unitario" Style="width:100%">
+                                        <RadzenNumeric Name="ServicoValor" TValue="decimal" @bind-Value="ViewModel.ServicoForm.ValorUnitario" Min="0" Step="0.01m" Format="c2" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <RadzenButton Text="Adicionar" Icon="add" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Style="width: 100%"
+                                                  Disabled="@ViewModel.IsSubmitting" Size="ButtonSize.Small" />
+                                </div>
+                            </div>
+                        </RadzenTemplateForm>
+                        <hr style="border-color: var(--os-border-light); margin: 1rem 0;" />
+                    }
+
+                    <RadzenDataGrid Data="@ViewModel.Detalhe.Servicos" TItem="OrdemServicoServicoResponseModel"
+                                    EmptyText="Nenhum servico adicionado." Density="Density.Compact">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="OrdemServicoServicoResponseModel" Property="Descricao" Title="Descricao" MinWidth="200px" />
+                            <RadzenDataGridColumn TItem="OrdemServicoServicoResponseModel" Property="Quantidade" Title="Qtd" Width="80px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn TItem="OrdemServicoServicoResponseModel" Property="ValorUnitario" Title="Unitario" Width="120px" TextAlign="TextAlign.End">
+                                <Template Context="item">@FormatCurrency(item.ValorUnitario)</Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="OrdemServicoServicoResponseModel" Property="Subtotal" Title="Subtotal" Width="120px" TextAlign="TextAlign.End">
+                                <Template Context="item"><strong>@FormatCurrency(item.Subtotal)</strong></Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- PRODUTOS -->
+            <RadzenTabsItem Text="Produtos" Icon="inventory_2">
+                <div class="os-card" style="box-shadow: none; border: none; padding: 0; margin: 0;">
+                    @if (!ViewModel.IsEdicaoBloqueadaAposEnvio)
+                    {
+                        <RadzenTemplateForm TItem="OrdemServicoComposicaoItemFormModel" Data="@ViewModel.ProdutoForm" Submit="@OnAdicionarProdutoAsync">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <RadzenFormField Text="Descricao" Style="width:100%">
+                                        <RadzenTextBox Name="ProdutoDescricao" @bind-Value="ViewModel.ProdutoForm.Descricao" Placeholder="Nome do produto ou peca" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-2">
+                                    <RadzenFormField Text="Qtd" Style="width:100%">
+                                        <RadzenNumeric Name="ProdutoQuantidade" TValue="int" @bind-Value="ViewModel.ProdutoForm.Quantidade" Min="1" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-3">
+                                    <RadzenFormField Text="Valor Unitario" Style="width:100%">
+                                        <RadzenNumeric Name="ProdutoValor" TValue="decimal" @bind-Value="ViewModel.ProdutoForm.ValorUnitario" Min="0" Step="0.01m" Format="c2" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <RadzenButton Text="Adicionar" Icon="add" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Style="width: 100%"
+                                                  Disabled="@ViewModel.IsSubmitting" Size="ButtonSize.Small" />
+                                </div>
+                            </div>
+                        </RadzenTemplateForm>
+                        <hr style="border-color: var(--os-border-light); margin: 1rem 0;" />
+                    }
+
+                    <RadzenDataGrid Data="@ViewModel.Detalhe.Produtos" TItem="OrdemServicoProdutoResponseModel"
+                                    EmptyText="Nenhum produto adicionado." Density="Density.Compact">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="OrdemServicoProdutoResponseModel" Property="Descricao" Title="Descricao" MinWidth="200px" />
+                            <RadzenDataGridColumn TItem="OrdemServicoProdutoResponseModel" Property="Quantidade" Title="Qtd" Width="80px" TextAlign="TextAlign.Center" />
+                            <RadzenDataGridColumn TItem="OrdemServicoProdutoResponseModel" Property="ValorUnitario" Title="Unitario" Width="120px" TextAlign="TextAlign.End">
+                                <Template Context="item">@FormatCurrency(item.ValorUnitario)</Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="OrdemServicoProdutoResponseModel" Property="Subtotal" Title="Subtotal" Width="120px" TextAlign="TextAlign.End">
+                                <Template Context="item"><strong>@FormatCurrency(item.Subtotal)</strong></Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- TAXAS -->
+            <RadzenTabsItem Text="Taxas" Icon="receipt_long">
+                <div class="os-card" style="box-shadow: none; border: none; padding: 0; margin: 0;">
+                    @if (!ViewModel.IsEdicaoBloqueadaAposEnvio)
+                    {
+                        <RadzenTemplateForm TItem="OrdemServicoTaxaFormModel" Data="@ViewModel.TaxaForm" Submit="@OnAdicionarTaxaAsync">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <RadzenFormField Text="Descricao" Style="width:100%">
+                                        <RadzenTextBox Name="TaxaDescricao" @bind-Value="ViewModel.TaxaForm.Descricao" Placeholder="Ex: Taxa de urgencia, Frete" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-4">
+                                    <RadzenFormField Text="Valor" Style="width:100%">
+                                        <RadzenNumeric Name="TaxaValor" TValue="decimal" @bind-Value="ViewModel.TaxaForm.Valor" Min="0" Step="0.01m" Format="c2" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <RadzenButton Text="Adicionar" Icon="add" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Style="width: 100%"
+                                                  Disabled="@ViewModel.IsSubmitting" Size="ButtonSize.Small" />
+                                </div>
+                            </div>
+                        </RadzenTemplateForm>
+                        <hr style="border-color: var(--os-border-light); margin: 1rem 0;" />
+                    }
+
+                    <RadzenDataGrid Data="@ViewModel.Detalhe.Taxas" TItem="OrdemServicoTaxaResponseModel"
+                                    EmptyText="Nenhuma taxa aplicada." Density="Density.Compact">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="OrdemServicoTaxaResponseModel" Property="Descricao" Title="Descricao" MinWidth="200px" />
+                            <RadzenDataGridColumn TItem="OrdemServicoTaxaResponseModel" Property="Valor" Title="Valor" Width="140px" TextAlign="TextAlign.End">
+                                <Template Context="item"><strong>@FormatCurrency(item.Valor)</strong></Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- DESCONTO -->
+            <RadzenTabsItem Text="Desconto" Icon="local_offer">
+                <div class="os-card" style="box-shadow: none; border: none; padding: 0; margin: 0;">
+                    @if (!ViewModel.IsEdicaoBloqueadaAposEnvio)
+                    {
+                        <RadzenTemplateForm TItem="OrdemServicoDescontoFormModel" Data="@ViewModel.DescontoForm" Submit="@OnAplicarDescontoAsync">
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <RadzenFormField Text="Tipo de Desconto" Style="width:100%">
+                                        <RadzenDropDown Name="DescontoTipo" Data="@ViewModel.TiposDesconto" TValue="TipoDescontoModel" @bind-Value="ViewModel.DescontoForm.Tipo" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-4">
+                                    <RadzenFormField Text="Valor" Style="width:100%">
+                                        <RadzenNumeric Name="DescontoValor" TValue="decimal" @bind-Value="ViewModel.DescontoForm.Valor" Min="0" Step="0.01m" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <RadzenButton Text="Aplicar Desconto" Icon="check" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Style="width: 100%"
+                                                  Disabled="@ViewModel.IsSubmitting" Size="ButtonSize.Small" />
+                                </div>
+                            </div>
+                        </RadzenTemplateForm>
+                    }
+
+                    @if (ViewModel.DescontoAplicado > 0)
+                    {
+                        <div class="os-financial-item mt-3" style="text-align: left; display: flex; align-items: center; gap: 1rem;">
+                            <span class="material-icons" style="color: var(--os-success); font-size: 2rem;">local_offer</span>
+                            <div>
+                                <div class="os-financial-label">Desconto atual aplicado</div>
+                                <div class="os-financial-value text-success">@FormatCurrency(ViewModel.DescontoAplicado)</div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p style="color: var(--os-text-muted); margin-top: 1rem;">Nenhum desconto aplicado a esta OS.</p>
+                    }
+                </div>
+            </RadzenTabsItem>
+
+            <!-- PAGAMENTOS -->
+            <RadzenTabsItem Text="Pagamentos" Icon="credit_card">
+                <div class="os-card" style="box-shadow: none; border: none; padding: 0; margin: 0;">
+                    @if (ViewModel.PodeRegistrarPagamento)
+                    {
+                        <RadzenTemplateForm TItem="OrdemServicoPagamentoFormModel" Data="@ViewModel.PagamentoForm" Submit="@OnRegistrarPagamentoAsync">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <RadzenFormField Text="Meio de Pagamento" Style="width:100%">
+                                        <RadzenDropDown Name="PagamentoMeio" Data="@ViewModel.MeiosPagamentoDisponiveis" TValue="MeioPagamentoModel" @bind-Value="ViewModel.PagamentoForm.Meio" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-3">
+                                    <RadzenFormField Text="Valor" Style="width:100%">
+                                        <RadzenNumeric Name="PagamentoValor" TValue="decimal" @bind-Value="ViewModel.PagamentoForm.Valor" Min="0" Step="0.01m" Format="c2" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-3">
+                                    <RadzenFormField Text="Data" Style="width:100%">
+                                        <RadzenDatePicker Name="PagamentoData" @bind-Value="ViewModel.PagamentoForm.DataPagamento" ShowTime="true" DateFormat="dd/MM/yyyy HH:mm" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <RadzenButton Text="Registrar" Icon="add" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Style="width: 100%"
+                                                  Disabled="@ViewModel.IsSubmitting" Size="ButtonSize.Small" />
+                                </div>
+                            </div>
+                        </RadzenTemplateForm>
+                        <hr style="border-color: var(--os-border-light); margin: 1rem 0;" />
+                    }
+
+                    <RadzenDataGrid Data="@(ViewModel.Detalhe.Pagamentos.OrderByDescending(p => p.DataPagamento))" TItem="OrdemServicoPagamentoResponseModel"
+                                    EmptyText="Nenhum pagamento registrado." Density="Density.Compact">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="OrdemServicoPagamentoResponseModel" Property="DataPagamento" Title="Data" Width="180px">
+                                <Template Context="item">@item.DataPagamento.ToString("dd/MM/yyyy HH:mm")</Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="OrdemServicoPagamentoResponseModel" Property="MeioPagamento" Title="Meio" Width="160px">
+                                <Template Context="item">@FormatMeioPagamento(item.MeioPagamento)</Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="OrdemServicoPagamentoResponseModel" Property="Valor" Title="Valor" Width="140px" TextAlign="TextAlign.End">
+                                <Template Context="item"><strong style="color: var(--os-success);">@FormatCurrency(item.Valor)</strong></Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                </div>
+            </RadzenTabsItem>
+
+            <!-- ANOTACOES -->
+            <RadzenTabsItem Text="Anotacoes" Icon="note">
+                <div class="os-card" style="box-shadow: none; border: none; padding: 0; margin: 0;">
+                    @if (!ViewModel.IsEdicaoBloqueadaAposEnvio)
+                    {
+                        <RadzenTemplateForm TItem="OrdemServicoAnotacaoFormModel" Data="@ViewModel.AnotacaoForm" Submit="@OnAdicionarAnotacaoAsync">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <RadzenFormField Text="Anotacao" Style="width:100%">
+                                        <RadzenTextArea Name="AnotacaoTexto" @bind-Value="ViewModel.AnotacaoForm.Texto" Rows="3" Placeholder="Anotacao interna (nao visivel ao cliente)" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-4">
+                                    <RadzenFormField Text="Autor" Style="width:100%">
+                                        <RadzenTextBox Name="AnotacaoAutor" @bind-Value="ViewModel.AnotacaoForm.Autor" Placeholder="Nome do operador" />
+                                    </RadzenFormField>
+                                    <div class="mt-2">
+                                        <RadzenButton Text="Adicionar Anotacao" Icon="add" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Style="width: 100%"
+                                                      Disabled="@ViewModel.IsSubmitting" Size="ButtonSize.Small" />
+                                    </div>
+                                </div>
+                            </div>
+                        </RadzenTemplateForm>
+                    }
+
+                    <p style="color: var(--os-text-muted); font-size: 0.85rem; margin-top: 1rem;">
+                        <span class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">info</span>
+                        Anotacoes sao internas e nao aparecem no PDF do cliente.
+                    </p>
+                </div>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var loadResult = await ViewModel.CarregarAsync(Id);
+        if (!loadResult.Succeeded)
+        {
+            Notify(loadResult, "Falha ao carregar detalhe da OS.");
+        }
+    }
+
+    private async Task OnAdicionarServicoAsync(OrdemServicoComposicaoItemFormModel _)
+        => Notify(await ViewModel.AdicionarServicoAsync(), "Servico adicionado.");
+
+    private async Task OnAdicionarProdutoAsync(OrdemServicoComposicaoItemFormModel _)
+        => Notify(await ViewModel.AdicionarProdutoAsync(), "Produto adicionado.");
+
+    private async Task OnAdicionarTaxaAsync(OrdemServicoTaxaFormModel _)
+        => Notify(await ViewModel.AdicionarTaxaAsync(), "Taxa adicionada.");
+
+    private async Task OnAplicarDescontoAsync(OrdemServicoDescontoFormModel _)
+        => Notify(await ViewModel.AplicarDescontoAsync(), "Desconto aplicado.");
+
+    private async Task OnAdicionarAnotacaoAsync(OrdemServicoAnotacaoFormModel _)
+        => Notify(await ViewModel.AdicionarAnotacaoAsync(), "Anotacao adicionada.");
+
+    private async Task OnEnviarOrcamentoAsync()
+        => Notify(await ViewModel.EnviarOrcamentoAsync(), "OS enviada como Orcamento.");
+
+    private async Task OnAprovarAsync()
+        => Notify(await ViewModel.AprovarAsync(), "OS aprovada.");
+
+    private async Task OnRejeitarAsync()
+        => Notify(await ViewModel.RejeitarAsync(), "OS rejeitada.");
+
+    private async Task OnIniciarAndamentoAsync()
+        => Notify(await ViewModel.IniciarAndamentoAsync(), "OS em andamento.");
+
+    private async Task OnConcluirAsync()
+        => Notify(await ViewModel.ConcluirAsync(), "OS concluida.");
+
+    private async Task OnEntregarAsync()
+        => Notify(await ViewModel.EntregarAsync(), "OS entregue.");
+
+    private async Task OnRegistrarPagamentoAsync(OrdemServicoPagamentoFormModel _)
+        => Notify(await ViewModel.RegistrarPagamentoAsync(), "Pagamento registrado.");
+
+    private void Notify(OperationResult result, string defaultSuccess)
+    {
+        AppNotifier.NotifyResult(result, "Ordem de Servico", defaultSuccess, "Operacao falhou.");
+        StateHasChanged();
+    }
+
+    private static string FormatCurrency(decimal value)
+        => value.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+
+    private static string FormatStatus(StatusOsModel status) => status switch
+    {
+        StatusOsModel.Rascunho => "Rascunho",
+        StatusOsModel.Orcamento => "Orcamento",
+        StatusOsModel.Aprovada => "Aprovada",
+        StatusOsModel.Rejeitada => "Rejeitada",
+        StatusOsModel.EmAndamento => "Em Andamento",
+        StatusOsModel.AguardandoPeca => "Aguardando Peca",
+        StatusOsModel.Concluida => "Concluida",
+        StatusOsModel.Entregue => "Entregue",
+        _ => status.ToString()
+    };
+
+    private static string GetStatusClass(StatusOsModel status) => status switch
+    {
+        StatusOsModel.Rascunho => "os-status-rascunho",
+        StatusOsModel.Orcamento => "os-status-orcamento",
+        StatusOsModel.Aprovada => "os-status-aprovada",
+        StatusOsModel.Rejeitada => "os-status-rejeitada",
+        StatusOsModel.EmAndamento => "os-status-emandamento",
+        StatusOsModel.AguardandoPeca => "os-status-aguardandopeca",
+        StatusOsModel.Concluida => "os-status-concluida",
+        StatusOsModel.Entregue => "os-status-entregue",
+        _ => ""
+    };
+
+    private static string GetStatusColor(StatusOsModel status) => status switch
+    {
+        StatusOsModel.Rascunho => "#94a3b8",
+        StatusOsModel.Orcamento => "#3b82f6",
+        StatusOsModel.Aprovada => "#10b981",
+        StatusOsModel.Rejeitada => "#ef4444",
+        StatusOsModel.EmAndamento => "#f59e0b",
+        StatusOsModel.AguardandoPeca => "#6366f1",
+        StatusOsModel.Concluida => "#06b6d4",
+        StatusOsModel.Entregue => "#059669",
+        _ => "#94a3b8"
+    };
+
+    private static string FormatMeioPagamento(MeioPagamentoModel meio) => meio switch
+    {
+        MeioPagamentoModel.Dinheiro => "Dinheiro",
+        MeioPagamentoModel.Pix => "PIX",
+        MeioPagamentoModel.CartaoCredito => "Cartao de Credito",
+        MeioPagamentoModel.CartaoDebito => "Cartao de Debito",
+        MeioPagamentoModel.Boleto => "Boleto",
+        MeioPagamentoModel.Transferencia => "Transferencia",
+        _ => meio.ToString()
+    };
+}

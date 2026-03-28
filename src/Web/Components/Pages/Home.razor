@@ -1,0 +1,112 @@
+@page "/"
+@inject IApiStatusService ApiStatusService
+@inject NavigationManager NavigationManager
+
+<PageTitle>OS Web - Painel</PageTitle>
+
+<div class="os-page-header">
+    <h1>Painel</h1>
+    <p>Acesso rapido as principais funcionalidades do sistema.</p>
+</div>
+
+<div class="os-dashboard-grid">
+    <a class="os-dashboard-card" href="ordens-servico">
+        <div class="os-dashboard-icon blue">
+            <span class="material-icons">add_circle</span>
+        </div>
+        <div class="os-dashboard-info">
+            <h3>Nova Ordem de Servico</h3>
+            <p>Criar uma nova OS em rascunho para um cliente.</p>
+        </div>
+    </a>
+
+    <a class="os-dashboard-card" href="ordens-servico/lista">
+        <div class="os-dashboard-icon cyan">
+            <span class="material-icons">list_alt</span>
+        </div>
+        <div class="os-dashboard-info">
+            <h3>Acompanhar OS</h3>
+            <p>Listar, filtrar e acompanhar ordens de servico.</p>
+        </div>
+    </a>
+
+    <a class="os-dashboard-card" href="clientes">
+        <div class="os-dashboard-icon green">
+            <span class="material-icons">person_add</span>
+        </div>
+        <div class="os-dashboard-info">
+            <h3>Clientes</h3>
+            <p>Cadastrar e consultar clientes do sistema.</p>
+        </div>
+    </a>
+
+    <a class="os-dashboard-card" href="equipamentos">
+        <div class="os-dashboard-icon orange">
+            <span class="material-icons">devices</span>
+        </div>
+        <div class="os-dashboard-info">
+            <h3>Equipamentos</h3>
+            <p>Gerenciar equipamentos vinculados aos clientes.</p>
+        </div>
+    </a>
+</div>
+
+<div class="os-card">
+    <div class="os-card-header">
+        <h4>Conexao com a API</h4>
+        <RadzenButton Text="Verificar" Icon="refresh" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                      Click="@CheckApiAsync" Disabled="@isChecking" />
+    </div>
+
+    @if (isChecking)
+    {
+        <div class="os-busy-block">
+            <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 200px" />
+            <span class="os-busy-label">Verificando conexao...</span>
+        </div>
+    }
+    else if (status is not null)
+    {
+        <div class="d-flex align-items-center gap-2">
+            @if (status.IsAvailable)
+            {
+                <span class="material-icons" style="color: var(--os-success); font-size: 1.5rem;">check_circle</span>
+                <div>
+                    <strong style="color: var(--os-success);">API disponivel</strong>
+                    <br />
+                    <small class="text-muted">@status.Message</small>
+                </div>
+            }
+            else
+            {
+                <span class="material-icons" style="color: var(--os-danger); font-size: 1.5rem;">error</span>
+                <div>
+                    <strong style="color: var(--os-danger);">API indisponivel</strong>
+                    <br />
+                    <small class="text-muted">@status.Message</small>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mb-0">Clique em "Verificar" para testar a conexao com a API.</p>
+    }
+</div>
+
+@code {
+    private ApiStatusResult? status;
+    private bool isChecking;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckApiAsync();
+    }
+
+    private async Task CheckApiAsync()
+    {
+        isChecking = true;
+        status = await ApiStatusService.CheckAsync();
+        isChecking = false;
+    }
+}

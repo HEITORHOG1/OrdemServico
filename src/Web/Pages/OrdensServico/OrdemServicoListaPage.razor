@@ -1,0 +1,235 @@
+@page "/ordens-servico/lista"
+@rendermode InteractiveServer
+@using Radzen
+@using Radzen.Blazor
+@using Web.Models
+@using Web.Services.Ui
+@using Web.State
+@using Web.ViewModels.OrdensServico
+@inject OrdemServicoListaViewModel ViewModel
+@inject NavigationManager NavigationManager
+@inject IAppNotifier AppNotifier
+
+<PageTitle>Ordens de Servico - OS Web</PageTitle>
+
+<div class="os-page-header">
+    <h1>Ordens de Servico</h1>
+    <p>Acompanhe, filtre e gerencie todas as ordens de servico do sistema.</p>
+</div>
+
+@if (ViewModel.IsLoading)
+{
+    <div class="os-busy-block">
+        <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 200px" />
+        <span class="os-busy-label">Carregando ordens de servico...</span>
+    </div>
+}
+
+<div class="os-card">
+    <h4 class="os-section-title">
+        <span class="material-icons">filter_alt</span>
+        Filtros
+    </h4>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <RadzenFormField Text="Numero da OS" Style="width:100%">
+                <RadzenTextBox Value="@ViewModel.NumeroFiltro" Change="@OnNumeroChanged" Placeholder="Buscar por numero" />
+            </RadzenFormField>
+        </div>
+        <div class="col-md-4">
+            <RadzenFormField Text="Status" Style="width:100%">
+                <RadzenDropDown Data="@ViewModel.StatusDisponiveis"
+                                TValue="StatusOsModel?"
+                                Value="@ViewModel.StatusFiltro"
+                                ValueChanged="@OnStatusFiltroChanged"
+                                AllowClear="true"
+                                Placeholder="Todos os status" />
+            </RadzenFormField>
+        </div>
+        <div class="col-md-4">
+            <RadzenFormField Text="ClienteId" Style="width:100%">
+                <RadzenTextBox Value="@ViewModel.ClienteIdFiltro" Change="@OnClienteChanged" Placeholder="Filtrar por cliente" />
+            </RadzenFormField>
+        </div>
+    </div>
+
+    <div class="os-page-actions mt-3">
+        <RadzenButton Text="Limpar filtros" Icon="clear" Click="@OnLimparFiltros" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" Disabled="@ViewModel.IsLoading" />
+        <RadzenButton Text="Atualizar" Icon="refresh" Click="@OnRecarregarPagina" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" Disabled="@ViewModel.IsLoading" />
+        <div style="flex: 1;"></div>
+        <RadzenButton Text="Nova OS" Icon="add" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="@(_ => NavigationManager.NavigateTo("/ordens-servico"))" />
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(ViewModel.ErrorMessage))
+{
+    <RadzenAlert AlertStyle="AlertStyle.Danger" ShowIcon="true" Shade="Shade.Lighter" class="mb-3">@ViewModel.ErrorMessage</RadzenAlert>
+}
+
+<div class="os-card">
+    <div class="os-card-header">
+        <h4 class="os-section-title" style="margin-bottom: 0;">
+            <span class="material-icons">assignment</span>
+            Resultados
+        </h4>
+        <span style="font-size: 0.85rem; color: var(--os-text-muted);">
+            Pagina @ViewModel.Page de @ViewModel.TotalPages &middot; @ViewModel.TotalCount registro(s)
+        </span>
+    </div>
+
+    <RadzenDataGrid Data="@ViewModel.ItensFiltrados" TItem="OrdemServicoResumoResponseModel"
+                    EmptyText="Nenhuma OS encontrada para os filtros informados."
+                    AllowColumnResize="true"
+                    Density="Density.Compact">
+        <Columns>
+            <RadzenDataGridColumn TItem="OrdemServicoResumoResponseModel" Property="Numero" Title="Numero" Width="160px">
+                <Template Context="item">
+                    <strong style="color: var(--os-primary);">@item.Numero</strong>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="OrdemServicoResumoResponseModel" Property="Status" Title="Status" Width="150px">
+                <Template Context="item">
+                    <span class="os-status-badge @GetStatusClass(item.Status)">@FormatStatus(item.Status)</span>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="OrdemServicoResumoResponseModel" Property="Defeito" Title="Defeito" MinWidth="200px">
+                <Template Context="item">
+                    <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">@item.Defeito</span>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="OrdemServicoResumoResponseModel" Property="ValorTotal" Title="Total" Width="120px" TextAlign="TextAlign.End">
+                <Template Context="item">
+                    <strong>@FormatCurrency(item.ValorTotal)</strong>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="OrdemServicoResumoResponseModel" Property="CreatedAt" Title="Criada em" Width="130px">
+                <Template Context="item">
+                    @item.CreatedAt.ToString("dd/MM/yyyy")
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="OrdemServicoResumoResponseModel" Title="" Width="120px" TextAlign="TextAlign.Center">
+                <Template Context="item">
+                    <RadzenButton Size="ButtonSize.ExtraSmall" Text="Abrir" Icon="open_in_new" ButtonStyle="ButtonStyle.Light"
+                                  Click="@(() => AbrirDetalhe(item.Id))" Disabled="@ViewModel.IsLoading" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+
+    <div class="os-page-actions mt-3 justify-content-center">
+        <RadzenButton Text="Anterior" Icon="chevron_left" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                      Click="@OnPaginaAnterior" Disabled="@(ViewModel.Page <= 1 || ViewModel.IsLoading)" />
+        <span style="font-size: 0.85rem; color: var(--os-text-muted); padding: 0 0.5rem;">@ViewModel.Page / @ViewModel.TotalPages</span>
+        <RadzenButton Text="Proxima" Icon="chevron_right" IconPosition="IconPosition.Right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
+                      Click="@OnProximaPagina" Disabled="@(ViewModel.Page >= ViewModel.TotalPages || ViewModel.IsLoading)" />
+    </div>
+</div>
+
+@code {
+    private CancellationTokenSource? _filtroDebounceCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await ViewModel.CarregarAsync();
+        Notify(result, "Lista carregada.");
+    }
+
+    private void OnNumeroChanged(string value)
+    {
+        ViewModel.NumeroFiltro = value;
+        _ = DebounceFiltrosAsync();
+    }
+
+    private Task OnStatusFiltroChanged(StatusOsModel? status)
+    {
+        ViewModel.StatusFiltro = status;
+        _ = DebounceFiltrosAsync();
+        return Task.CompletedTask;
+    }
+
+    private void OnClienteChanged(string value)
+    {
+        ViewModel.ClienteIdFiltro = value;
+        _ = DebounceFiltrosAsync();
+    }
+
+    private async Task OnRecarregarPagina()
+    {
+        var result = await ViewModel.CarregarAsync();
+        Notify(result, "Pagina recarregada.");
+    }
+
+    private async Task OnPaginaAnterior()
+    {
+        var result = await ViewModel.PaginaAnteriorAsync();
+        Notify(result, "Pagina anterior carregada.");
+    }
+
+    private async Task OnProximaPagina()
+    {
+        var result = await ViewModel.ProximaPaginaAsync();
+        Notify(result, "Proxima pagina carregada.");
+    }
+
+    private void OnLimparFiltros()
+    {
+        ViewModel.LimparFiltros();
+        StateHasChanged();
+    }
+
+    private async Task DebounceFiltrosAsync()
+    {
+        _filtroDebounceCts?.Cancel();
+        _filtroDebounceCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(300, _filtroDebounceCts.Token);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    private void AbrirDetalhe(Guid id)
+        => NavigationManager.NavigateTo($"/ordens-servico/detalhe/{id}");
+
+    private void Notify(OperationResult result, string defaultSuccess)
+    {
+        AppNotifier.NotifyResult(result, "Lista de OS", defaultSuccess, "Falha ao atualizar listagem.", notifySuccess: false);
+    }
+
+    private static string FormatCurrency(decimal value)
+        => value.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+
+    private static string FormatStatus(StatusOsModel status) => status switch
+    {
+        StatusOsModel.Rascunho => "Rascunho",
+        StatusOsModel.Orcamento => "Orcamento",
+        StatusOsModel.Aprovada => "Aprovada",
+        StatusOsModel.Rejeitada => "Rejeitada",
+        StatusOsModel.EmAndamento => "Em Andamento",
+        StatusOsModel.AguardandoPeca => "Aguardando Peca",
+        StatusOsModel.Concluida => "Concluida",
+        StatusOsModel.Entregue => "Entregue",
+        _ => status.ToString()
+    };
+
+    private static string GetStatusClass(StatusOsModel status) => status switch
+    {
+        StatusOsModel.Rascunho => "os-status-rascunho",
+        StatusOsModel.Orcamento => "os-status-orcamento",
+        StatusOsModel.Aprovada => "os-status-aprovada",
+        StatusOsModel.Rejeitada => "os-status-rejeitada",
+        StatusOsModel.EmAndamento => "os-status-emandamento",
+        StatusOsModel.AguardandoPeca => "os-status-aguardandopeca",
+        StatusOsModel.Concluida => "os-status-concluida",
+        StatusOsModel.Entregue => "os-status-entregue",
+        _ => ""
+    };
+}

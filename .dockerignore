@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.vs/
+**/node_modules/
+**/.git/
+**/docker-err.txt
+**/*.user
+**/*.suo
+**/Thumbs.db

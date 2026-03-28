@@ -1,0 +1,30 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <div class="d-flex align-items-center gap-2">
+                <span class="material-icons" style="font-size: 1.1rem; color: var(--os-text-muted);">notifications_none</span>
+                <span class="top-row-label">Sistema de Ordem de Servico</span>
+            </div>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<RadzenNotification />
+<RadzenDialog />
+<RadzenComponents />
+
+<div id="blazor-error-ui" data-nosnippet>
+    Ocorreu um erro inesperado.
+    <a href="." class="reload">Recarregar</a>
+    <span class="dismiss">X</span>
+</div>

@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(find g:/Projetos/Breno/07-03-2026 -name *Test*.cs -o -name *Tests.cs)",
+      "Bash(wc -l \"g:/Projetos/Breno/07-03-2026/src/Infrastructure/Persistence/Configurations\"/*.cs)",
+      "Bash(dotnet test:*)",
+      "Bash(docker build:*)",
+      "Bash(docker run:*)",
+      "Bash(docker-compose --profile analyze up analyze --build)",
+      "Bash(docker-compose up:*)",
+      "WebSearch",
+      "Bash(xargs grep:*)",
+      "Bash(find g:/Projetos/Breno/07-03-2026/src/Domain -name *.cs)",
+      "Bash(find g:/Projetos/Breno/07-03-2026/src/Web -name *.cs -o -name *.razor)",
+      "Bash(find g:/Projetos/Breno/07-03-2026/src/Application -name *.cs)",
+      "Bash(find g:/Projetos/Breno/07-03-2026/src/Infrastructure/Persistence -name *.cs)",
+      "Bash(find g:/Projetos/Breno/07-03-2026/tests -name *.cs)",
+      "Bash(find g:/Projetos/Breno/07-03-2026 -name Directory.Build.props -o -name Directory.Build.targets -o -name *.sln)",
+      "Bash(dotnet add:*)"
+    ]
+  }
+}

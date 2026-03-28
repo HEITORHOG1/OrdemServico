@@ -1,0 +1,568 @@
+/* ========================================
+   OS Web - Design System
+   ======================================== */
+
+:root {
+    --os-primary: #3b82f6;
+    --os-primary-dark: #2563eb;
+    --os-primary-light: #dbeafe;
+    --os-success: #10b981;
+    --os-warning: #f59e0b;
+    --os-danger: #ef4444;
+    --os-info: #06b6d4;
+
+    --os-bg: #f1f5f9;
+    --os-bg-card: #ffffff;
+    --os-bg-sidebar: #0f172a;
+    --os-bg-sidebar-hover: rgba(255, 255, 255, 0.08);
+    --os-bg-sidebar-active: rgba(59, 130, 246, 0.2);
+
+    --os-text: #1e293b;
+    --os-text-muted: #64748b;
+    --os-text-light: #94a3b8;
+    --os-text-sidebar: #cbd5e1;
+    --os-text-sidebar-active: #ffffff;
+
+    --os-border: #e2e8f0;
+    --os-border-light: #f1f5f9;
+    --os-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --os-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --os-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --os-radius: 8px;
+    --os-radius-lg: 12px;
+
+    --os-focus-ring: #3b82f6;
+    --os-focus-shadow: rgba(59, 130, 246, 0.25);
+}
+
+html, body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--os-bg);
+    color: var(--os-text);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ========================================
+   Links & Buttons
+   ======================================== */
+
+a, .btn-link {
+    color: var(--os-primary);
+    text-decoration: none;
+}
+
+a:hover, .btn-link:hover {
+    color: var(--os-primary-dark);
+}
+
+.btn-primary {
+    background-color: var(--os-primary);
+    border-color: var(--os-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--os-primary-dark);
+    border-color: var(--os-primary-dark);
+}
+
+/* ========================================
+   Focus States (Accessibility)
+   ======================================== */
+
+:focus-visible {
+    outline: 2px solid var(--os-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--os-focus-shadow);
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.15rem var(--os-focus-shadow);
+}
+
+/* ========================================
+   Page Layout
+   ======================================== */
+
+.os-page-header {
+    margin-bottom: 1.5rem;
+}
+
+.os-page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--os-text);
+    margin: 0 0 0.25rem 0;
+}
+
+.os-page-header p {
+    color: var(--os-text-muted);
+    font-size: 0.925rem;
+    margin: 0;
+}
+
+.os-page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--os-text);
+    margin: 0 0 0.25rem 0;
+}
+
+.os-page-subtitle {
+    color: var(--os-text-muted);
+    font-size: 0.925rem;
+    margin: 0 0 1.5rem 0;
+}
+
+/* ========================================
+   Cards
+   ======================================== */
+
+.os-card {
+    background: var(--os-bg-card);
+    border: 1px solid var(--os-border);
+    border-radius: var(--os-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--os-shadow-sm);
+}
+
+.os-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--os-border-light);
+}
+
+.os-card-header h3,
+.os-card-header h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--os-text);
+    margin: 0;
+}
+
+.os-section-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--os-text);
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.os-section-title .material-icons {
+    font-size: 1.25rem;
+    color: var(--os-primary);
+}
+
+/* ========================================
+   Status Badges
+   ======================================== */
+
+.os-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.os-status-rascunho { background: #f1f5f9; color: #475569; }
+.os-status-orcamento { background: #dbeafe; color: #1e40af; }
+.os-status-aprovada { background: #d1fae5; color: #065f46; }
+.os-status-rejeitada { background: #fee2e2; color: #991b1b; }
+.os-status-emandamento { background: #fef3c7; color: #92400e; }
+.os-status-aguardandopeca { background: #e0e7ff; color: #3730a3; }
+.os-status-concluida { background: #cffafe; color: #155e75; }
+.os-status-entregue { background: #d1fae5; color: #064e3b; }
+
+/* ========================================
+   Financial Summary
+   ======================================== */
+
+.os-financial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.os-financial-item {
+    background: var(--os-bg);
+    border-radius: var(--os-radius);
+    padding: 1rem;
+    text-align: center;
+}
+
+.os-financial-label {
+    font-size: 0.8rem;
+    color: var(--os-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.os-financial-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--os-text);
+}
+
+.os-financial-value.text-success { color: var(--os-success) !important; }
+.os-financial-value.text-danger { color: var(--os-danger) !important; }
+.os-financial-value.text-primary { color: var(--os-primary) !important; }
+
+/* ========================================
+   Actions Bar
+   ======================================== */
+
+.os-page-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ========================================
+   Loading / Busy States
+   ======================================== */
+
+.os-busy-block {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--os-primary-light);
+    border-radius: var(--os-radius);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.os-busy-label {
+    color: var(--os-primary-dark);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* ========================================
+   Empty States
+   ======================================== */
+
+.os-empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--os-text-muted);
+}
+
+.os-empty-state .material-icons {
+    font-size: 3rem;
+    color: var(--os-text-light);
+    margin-bottom: 1rem;
+}
+
+.os-empty-state p {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* ========================================
+   Status Timeline
+   ======================================== */
+
+.os-status-timeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.os-timeline-step {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    background: var(--os-border-light);
+    color: var(--os-text-muted);
+    transition: all 0.2s ease;
+}
+
+.os-timeline-step.active {
+    background: var(--os-primary);
+    color: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.os-timeline-step.completed {
+    background: var(--os-success);
+    color: white;
+}
+
+.os-timeline-arrow {
+    color: var(--os-text-light);
+    font-size: 1rem;
+}
+
+/* ========================================
+   Dashboard Cards
+   ======================================== */
+
+.os-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.os-dashboard-card {
+    background: var(--os-bg-card);
+    border: 1px solid var(--os-border);
+    border-radius: var(--os-radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    box-shadow: var(--os-shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.os-dashboard-card:hover {
+    box-shadow: var(--os-shadow-md);
+    transform: translateY(-2px);
+    color: inherit;
+    text-decoration: none;
+}
+
+.os-dashboard-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--os-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.os-dashboard-icon .material-icons {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.os-dashboard-icon.blue { background: var(--os-primary); }
+.os-dashboard-icon.green { background: var(--os-success); }
+.os-dashboard-icon.orange { background: var(--os-warning); }
+.os-dashboard-icon.cyan { background: var(--os-info); }
+
+.os-dashboard-info h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--os-text);
+    margin: 0 0 0.25rem 0;
+}
+
+.os-dashboard-info p {
+    font-size: 0.8rem;
+    color: var(--os-text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ========================================
+   Quick Stats
+   ======================================== */
+
+.os-quick-stat {
+    text-align: center;
+    padding: 1.25rem;
+}
+
+.os-quick-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--os-text);
+    line-height: 1;
+}
+
+.os-quick-stat-label {
+    font-size: 0.8rem;
+    color: var(--os-text-muted);
+    margin-top: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ========================================
+   Tables
+   ======================================== */
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table {
+    font-size: 0.9rem;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--os-text-muted);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--os-border);
+}
+
+/* ========================================
+   Form Labels
+   ======================================== */
+
+.rz-form-field label,
+.os-form-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--os-text);
+    margin-bottom: 0.25rem;
+}
+
+/* ========================================
+   Radzen Overrides
+   ======================================== */
+
+.rz-card {
+    border: 1px solid var(--os-border) !important;
+    border-radius: var(--os-radius-lg) !important;
+    box-shadow: var(--os-shadow-sm) !important;
+}
+
+.rz-tabview-nav {
+    border-bottom: 2px solid var(--os-border) !important;
+}
+
+.rz-datatable .rz-datatable-thead > tr > th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+}
+
+/* ========================================
+   Validation
+   ======================================== */
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid var(--os-success);
+}
+
+.invalid {
+    outline: 1px solid var(--os-danger);
+}
+
+.validation-message {
+    color: var(--os-danger);
+    font-size: 0.8rem;
+}
+
+/* ========================================
+   Content Area
+   ======================================== */
+
+.content {
+    padding-top: 1.1rem;
+}
+
+h1:focus {
+    outline: none;
+}
+
+/* ========================================
+   Blazor Error UI
+   ======================================== */
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+    border-radius: var(--os-radius);
+}
+
+.blazor-error-boundary::after {
+    content: "Ocorreu um erro inesperado."
+}
+
+/* ========================================
+   Accessibility
+   ======================================== */
+
+.os-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+
+@media (max-width: 768px) {
+    .os-page-header h1 {
+        font-size: 1.35rem;
+    }
+
+    .os-busy-block {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .os-page-actions {
+        width: 100%;
+    }
+
+    .os-page-actions .rz-button {
+        flex: 1 1 auto;
+    }
+
+    .os-financial-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .os-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .os-status-timeline {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .os-timeline-arrow {
+        transform: rotate(90deg);
+    }
+
+    .os-card {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .os-financial-grid {
+        grid-template-columns: 1fr;
+    }
+}

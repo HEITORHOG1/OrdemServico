@@ -1,0 +1,208 @@
+@page "/clientes"
+@rendermode InteractiveServer
+@inject ClienteCadastroViewModel ViewModel
+@inject IAppNotifier AppNotifier
+
+<PageTitle>Clientes - OS Web</PageTitle>
+
+<div class="os-page-header">
+    <h1>Clientes</h1>
+    <p>Busque clientes pelo nome ou cadastre um novo para vincular nas ordens de servico.</p>
+</div>
+
+@if (ViewModel.UltimoClienteId is not null)
+{
+    <RadzenAlert AlertStyle="AlertStyle.Success" ShowIcon="true" Shade="Shade.Lighter" class="mb-3" AllowClose="false">
+        <div class="d-flex align-items-center gap-2">
+            <span class="material-icons" style="font-size: 1.1rem;">person</span>
+            <span>Cliente selecionado: <strong>@ViewModel.UltimoClienteNome</strong></span>
+            <code style="font-size: 0.75rem; margin-left: 0.5rem;">@ViewModel.UltimoClienteId</code>
+        </div>
+    </RadzenAlert>
+}
+
+<!-- BUSCA POR NOME -->
+<div class="os-card">
+    <h4 class="os-section-title">
+        <span class="material-icons">search</span>
+        Buscar cliente por nome
+    </h4>
+
+    <div class="row g-3 align-items-end">
+        <div class="col-md-9">
+            <RadzenFormField Text="Nome do cliente" Style="width:100%">
+                <RadzenTextBox @bind-Value="ViewModel.BuscaNome" Placeholder="Digite pelo menos 2 caracteres para buscar..." />
+            </RadzenFormField>
+        </div>
+        <div class="col-md-3">
+            <RadzenButton Text="Buscar" Icon="search" ButtonStyle="ButtonStyle.Primary" Style="width: 100%"
+                          Click="@OnBuscarAsync" Disabled="@ViewModel.IsLoading" />
+        </div>
+    </div>
+
+    @if (ViewModel.IsLoading)
+    {
+        <div class="os-busy-block mt-3">
+            <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 200px" />
+            <span class="os-busy-label">Buscando clientes...</span>
+        </div>
+    }
+
+    @if (ViewModel.ClientesBusca.Count > 0)
+    {
+        <div class="mt-3">
+            <RadzenDataGrid Data="@ViewModel.ClientesBusca" TItem="ClienteResponseModel"
+                            Density="Density.Compact" AllowColumnResize="true">
+                <Columns>
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Nome" Title="Nome" MinWidth="180px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Documento" Title="Documento" Width="150px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Telefone" Title="Telefone" Width="150px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Email" Title="E-mail" Width="200px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Title="Acoes" Width="160px" TextAlign="TextAlign.Center">
+                        <Template Context="item">
+                            <RadzenButton Size="ButtonSize.ExtraSmall" Text="Selecionar" Icon="check_circle" ButtonStyle="ButtonStyle.Success"
+                                          Click="@(_ => OnSelecionarCliente(item))" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    }
+    else if (!ViewModel.IsLoading && !string.IsNullOrWhiteSpace(ViewModel.SuccessMessage) && ViewModel.ClientesBusca.Count == 0)
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="true" Shade="Shade.Lighter" class="mt-3">
+            Nenhum cliente encontrado com o nome informado.
+        </RadzenAlert>
+    }
+</div>
+
+<!-- CADASTRO -->
+<div class="os-card">
+    <div class="os-card-header">
+        <h4 class="os-section-title" style="margin: 0;">
+            <span class="material-icons">person_add</span>
+            Cadastrar novo cliente
+        </h4>
+        @if (!ViewModel.FormVisivel)
+        {
+            <RadzenButton Text="Novo Cliente" Icon="add" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small"
+                          Click="@(_ => ViewModel.AbrirNovoCliente())"
+                          Disabled="@(ViewModel.IsSubmitting)" />
+        }
+    </div>
+
+    @if (ViewModel.IsSubmitting)
+    {
+        <div class="os-busy-block">
+            <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 200px" />
+            <span class="os-busy-label">Salvando cliente...</span>
+        </div>
+    }
+
+    @if (ViewModel.FormVisivel)
+    {
+        <RadzenTemplateForm TItem="ClienteCadastroFormModel" Data="@ViewModel.Form" Submit="@OnSubmitAsync">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <RadzenFormField Text="Nome *" Style="width:100%">
+                        <RadzenTextBox Name="Nome" @bind-Value="ViewModel.Form.Nome" Placeholder="Nome completo do cliente" />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component="Nome" Text="Nome e obrigatorio." Popup="false" Style="position: static; font-size: 0.8rem;" />
+                    @if (ViewModel.ValidationErrors.TryGetValue("Nome", out var nomeErrors))
+                    {
+                        foreach (var error in nomeErrors)
+                        {
+                            <small class="text-danger d-block mt-1">@error</small>
+                        }
+                    }
+                </div>
+
+                <div class="col-md-6">
+                    <RadzenFormField Text="Documento (CPF/CNPJ)" Style="width:100%">
+                        <RadzenTextBox Name="Documento" @bind-Value="ViewModel.Form.Documento" Placeholder="000.000.000-00" />
+                    </RadzenFormField>
+                </div>
+
+                <div class="col-md-6">
+                    <RadzenFormField Text="Telefone" Style="width:100%">
+                        <RadzenTextBox Name="Telefone" @bind-Value="ViewModel.Form.Telefone" Placeholder="(00) 00000-0000" />
+                    </RadzenFormField>
+                </div>
+
+                <div class="col-md-6">
+                    <RadzenFormField Text="E-mail" Style="width:100%">
+                        <RadzenTextBox Name="Email" @bind-Value="ViewModel.Form.Email" Placeholder="email@exemplo.com" />
+                    </RadzenFormField>
+                    @if (ViewModel.ValidationErrors.TryGetValue("Email", out var emailErrors))
+                    {
+                        foreach (var error in emailErrors)
+                        {
+                            <small class="text-danger d-block mt-1">@error</small>
+                        }
+                    }
+                </div>
+
+                <div class="col-12">
+                    <RadzenFormField Text="Endereco" Style="width:100%">
+                        <RadzenTextBox Name="Endereco" @bind-Value="ViewModel.Form.Endereco" Placeholder="Rua, numero, bairro, cidade" />
+                    </RadzenFormField>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(ViewModel.ErrorMessage))
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Danger" ShowIcon="true" Shade="Shade.Lighter" class="mt-3">@ViewModel.ErrorMessage</RadzenAlert>
+            }
+
+            <div class="os-page-actions mt-3">
+                <RadzenButton Text="Salvar Cliente" Icon="save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Disabled="@ViewModel.IsSubmitting" />
+                <RadzenButton Text="Cancelar" Icon="close" ButtonStyle="ButtonStyle.Light" Click="@(_ => ViewModel.CancelarCadastro())" Disabled="@ViewModel.IsSubmitting" />
+            </div>
+        </RadzenTemplateForm>
+    }
+
+    @if (ViewModel.ClientesCriados.Count > 0)
+    {
+        <div class="mt-3">
+            <strong style="font-size: 0.85rem; color: var(--os-text-muted);">Clientes cadastrados nesta sessao:</strong>
+            <RadzenDataGrid Data="@ViewModel.ClientesCriados" TItem="ClienteResponseModel" class="mt-2"
+                            EmptyText="Nenhum cliente cadastrado nesta sessao."
+                            AllowColumnResize="true" Density="Density.Compact">
+                <Columns>
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Nome" Title="Nome" MinWidth="180px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Documento" Title="Documento" Width="150px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Telefone" Title="Telefone" Width="150px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Title="Acoes" Width="160px" TextAlign="TextAlign.Center">
+                        <Template Context="item">
+                            <RadzenButton Size="ButtonSize.ExtraSmall" Text="Selecionar" Icon="check_circle" ButtonStyle="ButtonStyle.Success"
+                                          Click="@(_ => OnSelecionarCliente(item))" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    }
+</div>
+
+@code {
+    private async Task OnBuscarAsync()
+    {
+        var result = await ViewModel.BuscarPorNomeAsync();
+        if (!result.Succeeded)
+        {
+            AppNotifier.ShowError("Clientes", result.Message ?? "Falha na busca.");
+        }
+    }
+
+    private void OnSelecionarCliente(ClienteResponseModel cliente)
+    {
+        ViewModel.SelecionarCliente(cliente);
+        AppNotifier.Success("Cliente", $"Cliente {cliente.Nome} selecionado.");
+    }
+
+    private async Task OnSubmitAsync(ClienteCadastroFormModel _)
+    {
+        var result = await ViewModel.SubmitAsync();
+        AppNotifier.NotifyResult(result, "Cliente", "Cliente cadastrado com sucesso.", "Falha ao cadastrar cliente.");
+    }
+}

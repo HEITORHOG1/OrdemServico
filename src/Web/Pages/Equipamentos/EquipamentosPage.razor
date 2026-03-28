@@ -1,0 +1,202 @@
+@page "/equipamentos"
+@rendermode InteractiveServer
+@inject EquipamentosViewModel ViewModel
+@inject IAppNotifier AppNotifier
+
+<PageTitle>Equipamentos - OS Web</PageTitle>
+
+<div class="os-page-header">
+    <h1>Equipamentos</h1>
+    <p>Busque um cliente pelo nome, depois visualize e cadastre equipamentos vinculados a ele.</p>
+</div>
+
+@if (ViewModel.EquipamentoSelecionadoId is not null)
+{
+    <RadzenAlert AlertStyle="AlertStyle.Success" ShowIcon="true" Shade="Shade.Lighter" class="mb-3" AllowClose="false">
+        <div class="d-flex align-items-center gap-2">
+            <span class="material-icons" style="font-size: 1.1rem;">devices</span>
+            <span>Equipamento selecionado: <strong>@ViewModel.EquipamentoSelecionadoDescricao</strong></span>
+            <code style="font-size: 0.75rem; margin-left: 0.5rem;">@ViewModel.EquipamentoSelecionadoId</code>
+        </div>
+    </RadzenAlert>
+}
+
+<!-- BUSCA CLIENTE POR NOME -->
+<div class="os-card">
+    <h4 class="os-section-title">
+        <span class="material-icons">search</span>
+        Buscar cliente por nome
+    </h4>
+
+    <div class="row g-3 align-items-end">
+        <div class="col-md-9">
+            <RadzenFormField Text="Nome do cliente" Style="width:100%">
+                <RadzenTextBox @bind-Value="ViewModel.BuscaClienteNome" Placeholder="Digite o nome do cliente para buscar..." />
+            </RadzenFormField>
+        </div>
+        <div class="col-md-3">
+            <RadzenButton Text="Buscar" Icon="search" ButtonStyle="ButtonStyle.Primary" Style="width: 100%"
+                          Click="@OnBuscarClienteAsync" Disabled="@ViewModel.IsLoading" />
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(ViewModel.ErrorMessage) && ViewModel.ClienteSelecionado is null)
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" ShowIcon="true" Shade="Shade.Lighter" class="mt-3">@ViewModel.ErrorMessage</RadzenAlert>
+    }
+
+    @if (ViewModel.ClientesBusca.Count > 0)
+    {
+        <div class="mt-3">
+            <RadzenDataGrid Data="@ViewModel.ClientesBusca" TItem="ClienteResponseModel"
+                            Density="Density.Compact" AllowColumnResize="true">
+                <Columns>
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Nome" Title="Nome" MinWidth="180px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Documento" Title="Documento" Width="150px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Property="Telefone" Title="Telefone" Width="150px" />
+                    <RadzenDataGridColumn TItem="ClienteResponseModel" Title="" Width="200px" TextAlign="TextAlign.Center">
+                        <Template Context="item">
+                            <RadzenButton Size="ButtonSize.ExtraSmall" Text="Ver Equipamentos" Icon="devices" ButtonStyle="ButtonStyle.Primary"
+                                          Click="@(_ => OnSelecionarClienteAsync(item))" Disabled="@ViewModel.IsLoading" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    }
+</div>
+
+<!-- CLIENTE SELECIONADO + EQUIPAMENTOS -->
+@if (ViewModel.ClienteSelecionado is not null)
+{
+    <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="true" Shade="Shade.Lighter" class="mb-3" AllowClose="false">
+        <div class="d-flex align-items-center gap-2">
+            <span class="material-icons" style="font-size: 1.1rem;">person</span>
+            <span>Exibindo equipamentos de: <strong>@ViewModel.ClienteSelecionado.Nome</strong></span>
+            @if (!string.IsNullOrWhiteSpace(ViewModel.ClienteSelecionado.Documento))
+            {
+                <span style="color: var(--os-text-muted);">&middot; @ViewModel.ClienteSelecionado.Documento</span>
+            }
+        </div>
+    </RadzenAlert>
+
+    @if (ViewModel.IsLoading)
+    {
+        <div class="os-busy-block">
+            <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 200px" />
+            <span class="os-busy-label">Carregando equipamentos...</span>
+        </div>
+    }
+
+    <div class="os-card">
+        <div class="os-card-header">
+            <h4 class="os-section-title" style="margin: 0;">
+                <span class="material-icons">devices</span>
+                Equipamentos do cliente
+            </h4>
+            <RadzenButton Text="Novo Equipamento" Icon="add" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small"
+                          Click="@(_ => ViewModel.AbrirNovoEquipamento())"
+                          Disabled="@(ViewModel.IsLoading || ViewModel.IsSubmitting)" />
+        </div>
+
+        @if (ViewModel.IsSubmitting)
+        {
+            <div class="os-busy-block">
+                <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 200px" />
+                <span class="os-busy-label">Salvando equipamento...</span>
+            </div>
+        }
+
+        @if (ViewModel.FormVisivel)
+        {
+            <div class="os-card" style="background: var(--os-bg); border: 1px dashed var(--os-border); margin-bottom: 1rem;">
+                <h4 class="os-section-title" style="margin-bottom: 1rem;">
+                    <span class="material-icons">add_circle</span>
+                    Novo Equipamento
+                </h4>
+
+                <RadzenTemplateForm TItem="EquipamentoCadastroFormModel" Data="@ViewModel.Form" Submit="@OnSubmitAsync">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <RadzenFormField Text="Tipo *" Style="width:100%">
+                                <RadzenTextBox Name="Tipo" @bind-Value="ViewModel.Form.Tipo" Placeholder="Ex: Notebook, Celular, Impressora" />
+                            </RadzenFormField>
+                            <RadzenRequiredValidator Component="Tipo" Text="Tipo e obrigatorio." Popup="false" Style="position: static; font-size: 0.8rem;" />
+                        </div>
+                        <div class="col-md-6">
+                            <RadzenFormField Text="Marca" Style="width:100%">
+                                <RadzenTextBox Name="Marca" @bind-Value="ViewModel.Form.Marca" Placeholder="Ex: Dell, Samsung" />
+                            </RadzenFormField>
+                        </div>
+                        <div class="col-md-6">
+                            <RadzenFormField Text="Modelo" Style="width:100%">
+                                <RadzenTextBox Name="Modelo" @bind-Value="ViewModel.Form.Modelo" Placeholder="Ex: Latitude 5540" />
+                            </RadzenFormField>
+                        </div>
+                        <div class="col-md-6">
+                            <RadzenFormField Text="Numero de Serie" Style="width:100%">
+                                <RadzenTextBox Name="NumeroSerie" @bind-Value="ViewModel.Form.NumeroSerie" Placeholder="S/N do fabricante" />
+                            </RadzenFormField>
+                        </div>
+                    </div>
+                    <div class="os-page-actions mt-3">
+                        <RadzenButton Text="Salvar Equipamento" Icon="save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Disabled="@ViewModel.IsSubmitting" />
+                        <RadzenButton Text="Cancelar" Icon="close" ButtonStyle="ButtonStyle.Light" Click="@(_ => ViewModel.CancelarCadastro())" Disabled="@ViewModel.IsSubmitting" />
+                    </div>
+                </RadzenTemplateForm>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(ViewModel.ErrorMessage) && ViewModel.ClienteSelecionado is not null)
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Danger" ShowIcon="true" Shade="Shade.Lighter" class="mb-3">@ViewModel.ErrorMessage</RadzenAlert>
+        }
+
+        <RadzenDataGrid Data="@ViewModel.Equipamentos" TItem="EquipamentoResponseModel"
+                        EmptyText="Nenhum equipamento cadastrado para este cliente."
+                        AllowColumnResize="true" Density="Density.Compact">
+            <Columns>
+                <RadzenDataGridColumn TItem="EquipamentoResponseModel" Property="Tipo" Title="Tipo" Width="140px" />
+                <RadzenDataGridColumn TItem="EquipamentoResponseModel" Property="Marca" Title="Marca" Width="140px" />
+                <RadzenDataGridColumn TItem="EquipamentoResponseModel" Property="Modelo" Title="Modelo" Width="160px" />
+                <RadzenDataGridColumn TItem="EquipamentoResponseModel" Property="NumeroSerie" Title="N. Serie" Width="150px" />
+                <RadzenDataGridColumn TItem="EquipamentoResponseModel" Title="Acoes" Width="160px" TextAlign="TextAlign.Center">
+                    <Template Context="item">
+                        <RadzenButton Size="ButtonSize.ExtraSmall" Text="Selecionar" Icon="check_circle" ButtonStyle="ButtonStyle.Success"
+                                      Click="@(_ => OnSelecionarEquipamento(item))"
+                                      Disabled="@(ViewModel.IsLoading || ViewModel.IsSubmitting)" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+}
+
+@code {
+    private async Task OnBuscarClienteAsync()
+    {
+        var result = await ViewModel.BuscarClientesPorNomeAsync();
+        if (!result.Succeeded)
+        {
+            AppNotifier.ShowError("Clientes", result.Message ?? "Falha na busca.");
+        }
+    }
+
+    private async Task OnSelecionarClienteAsync(ClienteResponseModel cliente)
+    {
+        var result = await ViewModel.SelecionarClienteECarregarEquipamentosAsync(cliente);
+        AppNotifier.NotifyResult(result, "Equipamentos", "Equipamentos carregados.", "Falha ao carregar equipamentos.");
+    }
+
+    private async Task OnSubmitAsync(EquipamentoCadastroFormModel _)
+    {
+        var result = await ViewModel.SubmitAsync();
+        AppNotifier.NotifyResult(result, "Equipamentos", "Equipamento cadastrado.", "Falha ao cadastrar equipamento.");
+    }
+
+    private void OnSelecionarEquipamento(EquipamentoResponseModel equipamento)
+    {
+        var result = ViewModel.SelecionarEquipamento(equipamento);
+        AppNotifier.NotifyResult(result, "Equipamentos", "Equipamento selecionado.", "Falha ao selecionar.");
+    }
+}

@@ -1,0 +1,25 @@
+# ============================================
+# Dockerfile para o Web Blazor (.NET 9)
+# ============================================
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copia props globais e solution primeiro (cache de restore)
+COPY Directory.Build.props .
+COPY OrdemServico.sln .
+
+# Copia csproj do Web para restore
+COPY src/Web/Web.csproj src/Web/
+
+RUN dotnet restore src/Web/Web.csproj
+
+# Copia todo o source e builda
+COPY src/Web/ src/Web/
+RUN dotnet publish src/Web/Web.csproj -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Web.dll"]

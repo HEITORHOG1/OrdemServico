@@ -1,0 +1,146 @@
+/* ========================================
+   Sidebar Brand
+   ======================================== */
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.brand-icon .material-icons {
+    color: white;
+    font-size: 1.4rem;
+}
+
+.brand-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: white;
+    display: block;
+    line-height: 1.2;
+}
+
+.brand-sub {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.45);
+    display: block;
+    letter-spacing: 0.04em;
+}
+
+/* ========================================
+   Navigation Toggler (Mobile)
+   ======================================== */
+
+.navbar-toggler {
+    appearance: none;
+    cursor: pointer;
+    width: 3.5rem;
+    height: 2.5rem;
+    color: white;
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") no-repeat center/1.75rem rgba(255, 255, 255, 0.1);
+}
+
+.navbar-toggler:checked {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ========================================
+   Section Labels
+   ======================================== */
+
+.nav-section-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1rem 1.25rem 0.4rem;
+}
+
+/* ========================================
+   Nav Items
+   ======================================== */
+
+.nav-item {
+    font-size: 0.875rem;
+    padding-bottom: 0.15rem;
+}
+
+.nav-item ::deep .nav-link {
+    color: rgba(255, 255, 255, 0.6);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0 0.75rem;
+    transition: all 0.15s ease;
+    font-weight: 400;
+}
+
+.nav-item ::deep a.active {
+    background: rgba(59, 130, 246, 0.2);
+    color: white;
+    font-weight: 500;
+}
+
+.nav-item ::deep a.active .nav-icon {
+    color: #60a5fa;
+}
+
+.nav-item ::deep .nav-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-icon {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   Scrollable Area
+   ======================================== */
+
+.nav-scrollable {
+    display: none;
+}
+
+.navbar-toggler:checked ~ .nav-scrollable {
+    display: block;
+}
+
+@media (min-width: 641px) {
+    .navbar-toggler {
+        display: none;
+    }
+
+    .nav-scrollable {
+        display: block;
+        height: calc(100vh - 75px);
+        overflow-y: auto;
+    }
+}

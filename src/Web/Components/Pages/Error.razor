@@ -1,0 +1,32 @@
+@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Erro - OS Web</PageTitle>
+
+<div style="text-align: center; padding: 3rem 1rem;">
+    <span class="material-icons" style="font-size: 4rem; color: var(--os-danger);">error_outline</span>
+    <h1 style="margin: 1rem 0 0.5rem; color: var(--os-text);">Ocorreu um erro</h1>
+    <p style="color: var(--os-text-muted); max-width: 500px; margin: 0 auto 1.5rem;">
+        Algo inesperado aconteceu ao processar sua solicitacao. Tente recarregar a pagina ou voltar ao painel.
+    </p>
+
+    @if (ShowRequestId)
+    {
+        <p style="color: var(--os-text-muted); font-size: 0.85rem;">
+            <strong>ID da solicitacao:</strong> <code>@RequestId</code>
+        </p>
+    }
+
+    <a href="/" class="btn btn-primary" style="margin-top: 1rem;">Voltar ao Painel</a>
+</div>
+
+@code{
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}
