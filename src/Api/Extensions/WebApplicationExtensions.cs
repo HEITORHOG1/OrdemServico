@@ -29,7 +29,6 @@ public static class WebApplicationExtensions
 
         // Custom Middlewares
         app.UseMiddleware<CorrelationIdMiddleware>();
-        app.UseMiddleware<RequestLoggingMiddleware>();
         app.UseCors("ApiCorsPolicy");
         app.UseMiddleware<ApiKeyAuthMiddleware>();
 

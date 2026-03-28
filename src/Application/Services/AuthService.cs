@@ -5,33 +5,40 @@ using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
-public sealed class AuthService : IAuthService
+public sealed partial class AuthService : IAuthService
 {
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenService _tokenService;
     private readonly IIdentityService _identityService;
+    private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IUsuarioRepository usuarioRepository,
         IUnitOfWork unitOfWork,
         ITokenService tokenService,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        ILogger<AuthService> logger)
     {
         _usuarioRepository = usuarioRepository;
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
         _identityService = identityService;
+        _logger = logger;
     }
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
         var credenciaisValidas = await _identityService.ValidarCredenciaisAsync(request.Email, request.Senha, cancellationToken);
         if (!credenciaisValidas)
+        {
+            LogLoginFalho(_logger, request.Email);
             throw new DomainException("Email ou senha invalidos.");
+        }
 
         var usuario = await _usuarioRepository.ObterPorEmailAsync(request.Email, cancellationToken);
         if (usuario is null)
@@ -51,6 +58,8 @@ public sealed class AuthService : IAuthService
         usuario.RegistrarAcesso();
         await _usuarioRepository.AtualizarAsync(usuario, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);
+
+        LogLoginSucesso(_logger, usuario.Email, usuario.Id);
 
         return new LoginResponse(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiraEm, usuario.ToResponse());
     }
@@ -146,4 +155,10 @@ public sealed class AuthService : IAuthService
         var usuario = await _usuarioRepository.ObterPorIdAsync(usuarioId, cancellationToken);
         return usuario?.ToResponse();
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Tentativa de login com credenciais invalidas para {Email}")]
+    private static partial void LogLoginFalho(ILogger logger, string email);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Login realizado com sucesso para {Email} (UsuarioId: {UsuarioId})")]
+    private static partial void LogLoginSucesso(ILogger logger, string email, Guid usuarioId);
 }

@@ -372,3 +372,4 @@ err.txt
 api-err*.txt
 docker-err.txt
 msbuild.log
+logs/

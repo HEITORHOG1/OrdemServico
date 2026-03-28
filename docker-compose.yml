@@ -94,9 +94,26 @@ services:
     networks:
       - os_network
 
+  # Seq (Log viewer — rodar com: docker-compose --profile monitoring up)
+  seq:
+    image: datalust/seq:latest
+    container_name: os_seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:5341"
+      - "8083:80"
+    volumes:
+      - seq_data:/data
+    networks:
+      - os_network
+    profiles:
+      - monitoring
+
 volumes:
   mysql_data:
   redis_data:
+  seq_data:
 
 networks:
   os_network:

@@ -12,8 +12,20 @@ using Radzen;
 using System.Net;
 using System.Text.Json.Nodes;
 using System.Text.Json;
+using Serilog;
+using System.Globalization;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+    .CreateBootstrapLogger();
+
+try
+{
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -835,3 +847,13 @@ app.MapGet("/internal/web-phase11-ux-smoke", async (
 });
 
 app.Run();
+
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Aplicacao Web encerrou inesperadamente");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
