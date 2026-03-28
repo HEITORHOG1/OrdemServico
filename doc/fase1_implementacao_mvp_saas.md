@@ -8,17 +8,17 @@
 
 ## Visao Geral das Features
 
-| # | Feature | Semanas | Dependencias |
-|---|---------|---------|-------------|
-| F0 | Logging Estruturado (Serilog) | 0.5 | Nenhuma |
-| F1 | Autenticacao (Identity + JWT) | 2 | F0 |
-| F2 | Multi-Tenancy | 2 | F1 |
-| F3 | Usuarios, Roles e Super Admin | 1-2 | F1, F2 |
-| F4 | Audit Trail (Log de Atividades) | 0.5 | F1, F2 |
-| F5 | Geracao de PDF | 1 | F2 |
-| F6 | Notificacoes por Email | 1 | F2, F3 |
-| F7 | Dashboard com KPIs | 1-2 | F2 |
-| F8 | Onboarding + Billing | 1 | F1, F2, F3 |
+| #  | Feature                         | Semanas | Dependencias |
+| -- | ------------------------------- | ------- | ------------ |
+| F0 | Logging Estruturado (Serilog)   | 0.5     | Nenhuma      |
+| F1 | Autenticacao (Identity + JWT)   | 2       | F0           |
+| F2 | Multi-Tenancy                   | 2       | F1           |
+| F3 | Usuarios, Roles e Super Admin   | 1-2     | F1, F2       |
+| F4 | Audit Trail (Log de Atividades) | 0.5     | F1, F2       |
+| F5 | Geracao de PDF                  | 1       | F2           |
+| F6 | Notificacoes por Email          | 1       | F2, F3       |
+| F7 | Dashboard com KPIs              | 1-2     | F2           |
+| F8 | Onboarding + Billing            | 1       | F1, F2, F3   |
 
 **Ordem de execucao**: F0 → F1 → F2 → F3 → F4 → (F5, F6, F7 em paralelo) → F8
 
@@ -46,14 +46,14 @@
 
 O sistema tem **dois niveis completamente diferentes** de administracao:
 
-| Conceito | Super Admin | Admin do Tenant |
-|----------|-------------|-----------------|
-| **Quem e** | Voce, dono da plataforma SaaS | O dono da empresa-cliente que contratou |
-| **Escopo** | Todos os tenants, todo o sistema | Apenas seu proprio tenant |
-| **TenantId** | NULL (nao pertence a nenhum tenant) | Tem TenantId fixo |
+| Conceito             | Super Admin                                                      | Admin do Tenant                                         |
+| -------------------- | ---------------------------------------------------------------- | ------------------------------------------------------- |
+| **Quem e**     | Voce, dono da plataforma SaaS                                    | O dono da empresa-cliente que contratou                 |
+| **Escopo**     | Todos os tenants, todo o sistema                                 | Apenas seu proprio tenant                               |
+| **TenantId**   | NULL (nao pertence a nenhum tenant)                              | Tem TenantId fixo                                       |
 | **Pode fazer** | CRUD tenants, suspender contas, ver metricas globais, impersonar | CRUD usuarios do seu tenant, ver OS, configurar empresa |
-| **Acessa via** | Painel administrativo `/admin` | Painel normal `/` |
-| **Quantidade** | 1-3 pessoas (voce + cofundadores) | 1+ por tenant |
+| **Acessa via** | Painel administrativo `/admin`                                 | Painel normal `/`                                     |
+| **Quantidade** | 1-3 pessoas (voce + cofundadores)                                | 1+ por tenant                                           |
 
 ### Hierarquia completa de cargos
 
@@ -344,14 +344,14 @@ Seq permite: buscar logs por TenantId, UsuarioId, CorrelationId, filtrar por niv
 
 ### Resumo F0
 
-| Item | Detalhe |
-|------|---------|
-| Pacotes | `Serilog.AspNetCore`, `Serilog.Sinks.File`, `Serilog.Sinks.Seq` |
-| Arquivos novos | 1 (TenantLogEnricher) |
-| Arquivos modificados | 4 (Program.cs API, Program.cs Web, appsettings.json, WebApplicationExtensions) |
-| Arquivos removidos | 1 (RequestLoggingMiddleware) |
-| Impacto no Domain | Nenhum |
-| Impacto no Application | Nenhum (continua usando ILogger<T>) |
+| Item                   | Detalhe                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| Pacotes                | `Serilog.AspNetCore`, `Serilog.Sinks.File`, `Serilog.Sinks.Seq`          |
+| Arquivos novos         | 1 (TenantLogEnricher)                                                          |
+| Arquivos modificados   | 4 (Program.cs API, Program.cs Web, appsettings.json, WebApplicationExtensions) |
+| Arquivos removidos     | 1 (RequestLoggingMiddleware)                                                   |
+| Impacto no Domain      | Nenhum                                                                         |
+| Impacto no Application | Nenhum (continua usando ILogger`<T>`)                                        |
 
 ---
 
@@ -362,6 +362,7 @@ Seq permite: buscar logs por TenantId, UsuarioId, CorrelationId, filtrar por niv
 Hoje o sistema usa apenas um header `X-Api-Key` compartilhado. Para SaaS, cada usuario precisa de login individual com JWT Bearer Token.
 
 ### Decisao Arquitetural
+
 - **ASP.NET Identity** para gestao de usuarios (tabelas AspNetUsers, AspNetRoles, etc.)
 - **JWT Bearer** para autenticacao na API
 - **Refresh Token** para renovacao sem re-login
@@ -372,8 +373,8 @@ Hoje o sistema usa apenas um header `X-Api-Key` compartilhado. Para SaaS, cada u
 ### Tasks
 
 - [ ] **F1-T1**: Entidade Usuario no Domain
-**Camada**: Domain
-**Arquivo**: `src/Domain/Entities/Usuario.cs`
+  **Camada**: Domain
+  **Arquivo**: `src/Domain/Entities/Usuario.cs`
 
 Criar entidade `Usuario` que representa o usuario de negocio (separado do IdentityUser que e infra).
 
@@ -392,6 +393,7 @@ Propriedades:
 ```
 
 **Regras**:
+
 - Classe `sealed`, construtor privado, factory method `Criar()`
 - Interface `IUsuarioRepository` em `Domain/Interfaces/`
 - `private set` em todas as propriedades
@@ -406,8 +408,8 @@ Propriedades:
 ---
 
 - [ ] **F1-T2**: Enum CargoUsuario
-**Camada**: Domain
-**Arquivo**: `src/Domain/Enums/CargoUsuario.cs`
+  **Camada**: Domain
+  **Arquivo**: `src/Domain/Enums/CargoUsuario.cs`
 
 ```csharp
 namespace Domain.Enums;
@@ -427,12 +429,14 @@ public enum CargoUsuario
 ---
 
 - [ ] **F1-T3**: Configuracao do ASP.NET Identity
-**Camada**: Infrastructure
-**Arquivos novos**:
+  **Camada**: Infrastructure
+  **Arquivos novos**:
+
 - `src/Infrastructure/Identity/AppIdentityUser.cs`
 - `src/Infrastructure/Identity/IdentityConfiguration.cs`
 
 **AppIdentityUser**: Herda de `IdentityUser`. Adiciona:
+
 - `TenantId` (Guid?) — null para SuperAdmin
 - `UsuarioId` (Guid, FK para Domain.Usuario)
 
@@ -446,16 +450,19 @@ Depois: public class AppDbContext : IdentityDbContext<AppIdentityUser>
 **Migration**: Gerar migration `AddIdentityTables` com as tabelas do Identity.
 
 **Pacotes NuGet necessarios (Infrastructure)**:
+
 - `Microsoft.AspNetCore.Identity.EntityFrameworkCore`
 
 **Pacotes NuGet necessarios (Api)**:
+
 - `Microsoft.AspNetCore.Authentication.JwtBearer`
 
 ---
 
 - [ ] **F1-T4**: Servico de Autenticacao na Application
-**Camada**: Application
-**Arquivos novos**:
+  **Camada**: Application
+  **Arquivos novos**:
+
 - `src/Application/Interfaces/IAuthService.cs`
 - `src/Application/Services/AuthService.cs`
 - `src/Application/DTOs/Auth/LoginRequest.cs`
@@ -471,6 +478,7 @@ Depois: public class AppDbContext : IdentityDbContext<AppIdentityUser>
 - `src/Application/DTOs/Auth/Validators/RedefinirSenhaValidator.cs`
 
 **Interface IAuthService**:
+
 ```csharp
 Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken ct = default);
 Task<LoginResponse> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken ct = default);
@@ -489,6 +497,7 @@ Task RedefinirSenhaAsync(RedefinirSenhaRequest request, CancellationToken ct = d
 **Validators**: FluentValidation para email, senha (min 8 chars, 1 maiuscula, 1 numero, 1 especial).
 
 **Fluxo do LoginAsync**:
+
 1. Buscar IdentityUser por email
 2. Validar senha via UserManager
 3. Buscar Usuario (domain) pelo IdentityUserId
@@ -500,6 +509,7 @@ Task RedefinirSenhaAsync(RedefinirSenhaRequest request, CancellationToken ct = d
 9. Retornar LoginResponse
 
 **Fluxo do EsqueciSenhaAsync**:
+
 1. Buscar IdentityUser por email
 2. Gerar token de reset via `UserManager.GeneratePasswordResetTokenAsync()`
 3. Enviar email com link de reset (usa IEmailService da F6)
@@ -508,14 +518,16 @@ Task RedefinirSenhaAsync(RedefinirSenhaRequest request, CancellationToken ct = d
 ---
 
 - [ ] **F1-T5**: Geracao de JWT na Infrastructure
-**Camada**: Infrastructure
-**Arquivos novos**:
+  **Camada**: Infrastructure
+  **Arquivos novos**:
+
 - `src/Infrastructure/Identity/JwtTokenService.cs`
 - `src/Infrastructure/Identity/IJwtTokenService.cs`
 - `src/Infrastructure/Identity/JwtOptions.cs`
 - `src/Infrastructure/Identity/RefreshToken.cs` (entidade para persistir refresh tokens)
 
 **JwtOptions** (configuration — `appsettings.json` secao `Jwt`):
+
 ```
 - SecretKey: string (min 32 chars)
 - Issuer: string
@@ -525,6 +537,7 @@ Task RedefinirSenhaAsync(RedefinirSenhaRequest request, CancellationToken ct = d
 ```
 
 **Claims no JWT**:
+
 ```csharp
 new Claim("sub", usuario.Id.ToString()),
 new Claim("email", usuario.Email),
@@ -535,6 +548,7 @@ new Claim("is_super_admin", usuario.EhSuperAdmin().ToString())
 ```
 
 **RefreshToken** (tabela no banco):
+
 ```
 - Id: Guid
 - UsuarioId: Guid
@@ -550,8 +564,8 @@ new Claim("is_super_admin", usuario.EhSuperAdmin().ToString())
 ---
 
 - [ ] **F1-T6**: Endpoints de Auth na API
-**Camada**: Api
-**Arquivo novo**: `src/Api/Endpoints/AuthEndpoints.cs`
+  **Camada**: Api
+  **Arquivo novo**: `src/Api/Endpoints/AuthEndpoints.cs`
 
 ```
 POST /api/auth/login             → LoginAsync                [publico]
@@ -564,6 +578,7 @@ POST /api/auth/redefinir-senha   → RedefinirSenhaAsync       [publico, com tok
 ```
 
 **Configuracao no pipeline**:
+
 - Adicionar `builder.Services.AddAuthentication().AddJwtBearer(...)` em `ServiceCollectionExtensions`
 - Adicionar `app.UseAuthentication()` e `app.UseAuthorization()` em `WebApplicationExtensions`
 - Manter o `ApiKeyAuthMiddleware` como fallback para integracao de terceiros
@@ -573,8 +588,9 @@ POST /api/auth/redefinir-senha   → RedefinirSenhaAsync       [publico, com tok
 ---
 
 - [ ] **F1-T7**: Auth no Blazor Web
-**Camada**: Web
-**Arquivos novos**:
+  **Camada**: Web
+  **Arquivos novos**:
+
 - `src/Web/Services/Auth/IAuthApi.cs`
 - `src/Web/Services/Auth/AuthApi.cs`
 - `src/Web/Services/Auth/AuthStateProvider.cs`
@@ -599,23 +615,25 @@ POST /api/auth/redefinir-senha   → RedefinirSenhaAsync       [publico, com tok
 ---
 
 - [ ] **F1-T8**: Seed do Super Admin
-**Camada**: Infrastructure
-**Arquivo modificado**: `src/Infrastructure/Persistence/DatabaseSeeder.cs`
+  **Camada**: Infrastructure
+  **Arquivo modificado**: `src/Infrastructure/Persistence/DatabaseSeeder.cs`
 
 No `SeedAsync()`, criar o primeiro SuperAdmin se nao existir:
+
 1. Criar role "SuperAdmin" no Identity (se nao existir)
 2. Criar roles "Admin", "Gerente", "Tecnico", "Atendente"
 3. Criar IdentityUser com email do env var `SUPERADMIN_EMAIL` (default: `admin@ordemservico.com`)
 4. Criar senha do env var `SUPERADMIN_PASSWORD` (default: `Admin@123456`)
 5. Criar entidade `Usuario` com `CargoUsuario.SuperAdmin` e `TenantId = null`
-6. Atribuir role "SuperAdmin"
+6. Atribuir role "SuperAdmin"21
 
 **IMPORTANTE**: Em producao, o email/senha devem vir de variaveis de ambiente ou secrets, NUNCA hardcoded.
 
 ---
 
 - [ ] **F1-T9**: Testes de Auth
-**Camada**: Tests
+  **Camada**: Tests
+
 - `tests/Domain.UnitTests/Entities/UsuarioTests.cs`:
   - `Criar_ComCargoSuperAdmin_TenantIdDeveSerNull`
   - `Criar_ComCargoAdmin_TenantIdDeveSerObrigatorio`
@@ -636,9 +654,11 @@ No `SeedAsync()`, criar o primeiro SuperAdmin se nao existir:
 ## F2 — MULTI-TENANCY
 
 ### Contexto
+
 Para SaaS, cada empresa (tenant) deve ver SOMENTE seus dados. Um tecnico da empresa A nao pode ver OS da empresa B.
 
 ### Decisao Arquitetural
+
 - **Estrategia**: Banco compartilhado com coluna `TenantId` (GUID) em todas as entidades
 - **Filtro global** do EF Core: `builder.HasQueryFilter(x => x.TenantId == currentTenantId)`
 - **TenantId extraido do JWT** (claim `tenant_id`) em cada request
@@ -648,8 +668,8 @@ Para SaaS, cada empresa (tenant) deve ver SOMENTE seus dados. Um tecnico da empr
 ### Tasks
 
 - [ ] **F2-T1**: Entidade Tenant no Domain
-**Camada**: Domain
-**Arquivo**: `src/Domain/Entities/Tenant.cs`
+  **Camada**: Domain
+  **Arquivo**: `src/Domain/Entities/Tenant.cs`
 
 ```
 Propriedades:
@@ -675,6 +695,7 @@ Propriedades:
 **Enum `PlanoTenant`** em `Domain/Enums/`: `Free`, `Starter`, `Pro`, `Business`, `Enterprise`
 
 **Interface `ITenantRepository`** em `Domain/Interfaces/`:
+
 ```csharp
 Task AdicionarAsync(Tenant tenant, CancellationToken ct = default);
 Task AtualizarAsync(Tenant tenant, CancellationToken ct = default);
@@ -686,6 +707,7 @@ Task<int> ContarAsync(CancellationToken ct = default);
 ```
 
 **Regras**:
+
 - Slug gerado a partir do Nome (lowercase, sem acentos, espacos viram hifens)
 - Slug deve ser unico (validar no service antes de salvar)
 - Metodo `Suspender(string motivo)` — seta `Ativo = false`, `MotivoDesativacao = motivo`
@@ -697,8 +719,8 @@ Task<int> ContarAsync(CancellationToken ct = default);
 ---
 
 - [ ] **F2-T2**: Interface ITenantProvider no Domain
-**Camada**: Domain
-**Arquivo**: `src/Domain/Interfaces/ITenantProvider.cs`
+  **Camada**: Domain
+  **Arquivo**: `src/Domain/Interfaces/ITenantProvider.cs`
 
 ```csharp
 public interface ITenantProvider
@@ -713,8 +735,9 @@ public interface ITenantProvider
 ---
 
 - [ ] **F2-T3**: Adicionar TenantId em TODAS as entidades existentes
-**Camada**: Domain
-**Arquivos modificados**:
+  **Camada**: Domain
+  **Arquivos modificados**:
+
 - `src/Domain/Entities/Cliente.cs` — adicionar `public Guid TenantId { get; private set; }`
 - `src/Domain/Entities/Equipamento.cs` — adicionar `TenantId`
 - `src/Domain/Entities/OrdemServico.cs` — adicionar `TenantId`
@@ -727,8 +750,8 @@ public interface ITenantProvider
 ---
 
 - [ ] **F2-T4**: Global Query Filter no EF Core
-**Camada**: Infrastructure
-**Arquivo modificado**: `src/Infrastructure/Persistence/AppDbContext.cs`
+  **Camada**: Infrastructure
+  **Arquivo modificado**: `src/Infrastructure/Persistence/AppDbContext.cs`
 
 ```csharp
 public class AppDbContext : IdentityDbContext<AppIdentityUser>
@@ -782,8 +805,8 @@ public class AppDbContext : IdentityDbContext<AppIdentityUser>
 ---
 
 - [ ] **F2-T5**: Implementacao do TenantProvider
-**Camada**: Infrastructure
-**Arquivo novo**: `src/Infrastructure/Tenancy/HttpTenantProvider.cs`
+  **Camada**: Infrastructure
+  **Arquivo novo**: `src/Infrastructure/Tenancy/HttpTenantProvider.cs`
 
 ```csharp
 public sealed class HttpTenantProvider : ITenantProvider
@@ -817,7 +840,7 @@ Registrar no DI: `services.AddScoped<ITenantProvider, HttpTenantProvider>()`
 ---
 
 - [ ] **F2-T6**: Migration
-**Migration**: `AddMultiTenancy`
+  **Migration**: `AddMultiTenancy`
 
 - Criar tabela `tenants` com todas as colunas
 - Criar tabela `usuarios`
@@ -832,13 +855,15 @@ Registrar no DI: `services.AddScoped<ITenantProvider, HttpTenantProvider>()`
 ---
 
 - [ ] **F2-T7**: Atualizar Services existentes
-**Camada**: Application
-**Arquivos modificados**:
+  **Camada**: Application
+  **Arquivos modificados**:
+
 - `src/Application/Services/ClienteService.cs` — injetar `ITenantProvider`, passar `TenantId` no `Criar()`
 - `src/Application/Services/EquipamentoService.cs` — idem
 - `src/Application/Services/OrdemServicoService.cs` — idem
 
 **Padrao**:
+
 ```csharp
 public sealed class ClienteService : IClienteService
 {
@@ -862,8 +887,8 @@ public sealed class ClienteService : IClienteService
 ---
 
 - [ ] **F2-T8**: Atualizar OrdemServicoAnotacao para rastrear UsuarioId
-**Camada**: Domain
-**Arquivo modificado**: `src/Domain/Entities/OrdemServicoAnotacao.cs`
+  **Camada**: Domain
+  **Arquivo modificado**: `src/Domain/Entities/OrdemServicoAnotacao.cs`
 
 O campo `Autor` hoje e uma `string` livre. Para SaaS com usuarios, deve referenciar o `UsuarioId`:
 
@@ -878,6 +903,7 @@ Atualizar factory method `Criar()` e o `AdicionarAnotacaoRequest` para receber `
 ---
 
 - [ ] **F2-T9**: Testes de Multi-Tenancy
+
 - Testar que factory method com `tenantId == Guid.Empty` lanca excecao
 - Testar que `ITenantProvider.EhSuperAdmin` desabilita query filter
 - Testar que `SaveChangesAsync` preenche TenantId quando vazio (defense in depth)
@@ -888,25 +914,27 @@ Atualizar factory method `Criar()` e o `AdicionarAnotacaoRequest` para receber `
 ## F3 — USUARIOS, ROLES E SUPER ADMIN
 
 ### Contexto
+
 Dois niveis de gestao: SuperAdmin gerencia tenants, Admin de cada tenant gerencia seus usuarios.
 
 ### Tasks
 
 - [ ] **F3-T1**: Tabela de Permissoes por Cargo
 
-| Cargo | Criar OS | Aprovar OS | Ver financeiro | Gerenciar usuarios | Alterar plano | Gerenciar tenants | Impersonar |
-|-------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **SuperAdmin** | — | — | Global | — | Sim | Sim | Sim |
-| **Admin** | Sim | Sim | Sim | Sim (do tenant) | Sim (do tenant) | Nao | Nao |
-| **Gerente** | Sim | Sim | Sim | Nao | Nao | Nao | Nao |
-| **Tecnico** | Sim (proprias) | Nao | Nao | Nao | Nao | Nao | Nao |
-| **Atendente** | Sim | Nao | Parcial (sem lucro) | Nao | Nao | Nao | Nao |
+| Cargo                |    Criar OS    | Aprovar OS |   Ver financeiro   | Gerenciar usuarios |  Alterar plano  | Gerenciar tenants | Impersonar |
+| -------------------- | :------------: | :--------: | :-----------------: | :----------------: | :-------------: | :---------------: | :--------: |
+| **SuperAdmin** |       —       |     —     |       Global       |         —         |       Sim       |        Sim        |    Sim    |
+| **Admin**      |      Sim      |    Sim    |         Sim         |  Sim (do tenant)  | Sim (do tenant) |        Nao        |    Nao    |
+| **Gerente**    |      Sim      |    Sim    |         Sim         |        Nao        |       Nao       |        Nao        |    Nao    |
+| **Tecnico**    | Sim (proprias) |    Nao    |         Nao         |        Nao        |       Nao       |        Nao        |    Nao    |
+| **Atendente**  |      Sim      |    Nao    | Parcial (sem lucro) |        Nao        |       Nao       |        Nao        |    Nao    |
 
 ---
 
 - [ ] **F3-T2**: Service de Gestao de Usuarios (Tenant-scoped)
-**Camada**: Application
-**Arquivos novos**:
+  **Camada**: Application
+  **Arquivos novos**:
+
 - `src/Application/Interfaces/IUsuarioService.cs`
 - `src/Application/Services/UsuarioService.cs`
 - `src/Application/DTOs/Usuarios/UsuarioResponse.cs`
@@ -916,6 +944,7 @@ Dois niveis de gestao: SuperAdmin gerencia tenants, Admin de cada tenant gerenci
 - `src/Application/DTOs/Usuarios/Validators/CriarUsuarioValidator.cs`
 
 **Operacoes**:
+
 ```
 CriarAsync(CriarUsuarioRequest) → UsuarioResponse   // Cria Identity + Usuario domain
 AtualizarAsync(Guid, AtualizarUsuarioRequest) → void
@@ -927,6 +956,7 @@ AlterarCargoAsync(Guid, CargoUsuario) → void
 ```
 
 **Validacoes**:
+
 - Nao pode criar usuario com cargo `SuperAdmin` (somente seed)
 - Nao pode criar mais usuarios que o plano permite (usar PlanoLimiteService)
 - Email deve ser unico no tenant
@@ -935,8 +965,9 @@ AlterarCargoAsync(Guid, CargoUsuario) → void
 ---
 
 - [ ] **F3-T3**: Painel do Super Admin
-**Camada**: Application
-**Arquivos novos**:
+  **Camada**: Application
+  **Arquivos novos**:
+
 - `src/Application/Interfaces/ISuperAdminService.cs`
 - `src/Application/Services/SuperAdminService.cs`
 - `src/Application/DTOs/Admin/TenantResumoResponse.cs`
@@ -945,6 +976,7 @@ AlterarCargoAsync(Guid, CargoUsuario) → void
 - `src/Application/DTOs/Admin/ImpersonarRequest.cs`
 
 **ISuperAdminService**:
+
 ```csharp
 // Gestao de Tenants
 Task<PagedResponse<TenantResumoResponse>> ListarTenantsAsync(PagedRequest request, CancellationToken ct = default);
@@ -961,6 +993,7 @@ Task<LoginResponse> ImpersonarAsync(ImpersonarRequest request, CancellationToken
 ```
 
 **MetricasGlobaisResponse**:
+
 ```csharp
 public sealed record MetricasGlobaisResponse(
     int TotalTenants,
@@ -974,6 +1007,7 @@ public sealed record MetricasGlobaisResponse(
 ```
 
 **Impersonacao**:
+
 - SuperAdmin pode gerar um JWT com o TenantId de qualquer tenant
 - O JWT gerado inclui claim `impersonated_by: superAdminUsuarioId`
 - Permite resolver problemas de clientes sem pedir credenciais
@@ -982,8 +1016,8 @@ public sealed record MetricasGlobaisResponse(
 ---
 
 - [ ] **F3-T4**: Endpoints do Super Admin
-**Camada**: Api
-**Arquivo novo**: `src/Api/Endpoints/SuperAdminEndpoints.cs`
+  **Camada**: Api
+  **Arquivo novo**: `src/Api/Endpoints/SuperAdminEndpoints.cs`
 
 ```
 GET    /api/admin/tenants                   → ListarTenantsAsync
@@ -1000,8 +1034,8 @@ Todos com `.RequireAuthorization("SuperAdminOnly")`.
 ---
 
 - [ ] **F3-T5**: Endpoints de Usuarios (Tenant-scoped)
-**Camada**: Api
-**Arquivo novo**: `src/Api/Endpoints/UsuarioEndpoints.cs`
+  **Camada**: Api
+  **Arquivo novo**: `src/Api/Endpoints/UsuarioEndpoints.cs`
 
 ```
 GET    /api/usuarios                    → ListarPorTenantAsync   [Admin]
@@ -1016,8 +1050,8 @@ POST   /api/usuarios/{id:guid}/reativar → ReativarAsync          [Admin]
 ---
 
 - [ ] **F3-T6**: Authorization Policies
-**Camada**: Api
-**Arquivo modificado**: `src/Api/Extensions/ServiceCollectionExtensions.cs`
+  **Camada**: Api
+  **Arquivo modificado**: `src/Api/Extensions/ServiceCollectionExtensions.cs`
 
 ```csharp
 services.AddAuthorizationBuilder()
@@ -1029,6 +1063,7 @@ services.AddAuthorizationBuilder()
 ```
 
 **Aplicar nos endpoints existentes**:
+
 - `MapOrdemServicoEndpoints`: `.RequireAuthorization("PodeCriarOS")` nos POSTs, `.RequireAuthorization("PodeAlterarStatus")` no PATCH de status
 - `MapClienteEndpoints`: `.RequireAuthorization()` (qualquer autenticado)
 - `MapEquipamentoEndpoints`: `.RequireAuthorization()` (qualquer autenticado)
@@ -1036,8 +1071,9 @@ services.AddAuthorizationBuilder()
 ---
 
 - [ ] **F3-T7**: Tela do Super Admin no Blazor
-**Camada**: Web
-**Arquivos novos**:
+  **Camada**: Web
+  **Arquivos novos**:
+
 - `src/Web/Pages/Admin/AdminDashboardPage.razor` (rota: `/admin`)
 - `src/Web/Pages/Admin/AdminTenantsPage.razor` (rota: `/admin/tenants`)
 - `src/Web/Pages/Admin/AdminTenantDetalhePage.razor` (rota: `/admin/tenants/{id}`)
@@ -1047,6 +1083,7 @@ services.AddAuthorizationBuilder()
 - `src/Web/Services/Api/SuperAdminApi.cs`
 
 **Funcionalidades do painel admin**:
+
 - Dashboard com MRR, total tenants, total usuarios, total OS global
 - Lista de tenants (nome, plano, status, total usuarios, total OS, data cadastro)
 - Detalhe do tenant (dados, usuarios, metricas, botao suspender/reativar, alterar plano)
@@ -1057,8 +1094,9 @@ services.AddAuthorizationBuilder()
 ---
 
 - [ ] **F3-T8**: Tela de Usuarios do Tenant no Blazor
-**Camada**: Web
-**Arquivos novos**:
+  **Camada**: Web
+  **Arquivos novos**:
+
 - `src/Web/Pages/Usuarios/UsuariosPage.razor`
 - `src/Web/ViewModels/Usuarios/UsuariosViewModel.cs`
 - `src/Web/ViewModels/Usuarios/UsuarioFormModel.cs`
@@ -1066,6 +1104,7 @@ services.AddAuthorizationBuilder()
 - `src/Web/Services/Api/UsuariosApi.cs`
 
 **Funcionalidades**:
+
 - Listar usuarios do tenant (DataGrid)
 - Criar novo usuario (nome, email, senha, cargo)
 - Editar cargo
@@ -1080,9 +1119,11 @@ services.AddAuthorizationBuilder()
 ## F4 — AUDIT TRAIL (LOG DE ATIVIDADES)
 
 ### Contexto
+
 Para SaaS profissional e compliance, e necessario saber **quem fez o que e quando**. Hoje `OrdemServicoAnotacao.Autor` e uma string livre — nao ha rastreabilidade real.
 
 ### Decisao Arquitetural
+
 - Tabela `audit_logs` separada, NUNCA deletada (append-only)
 - Registrar automaticamente via interceptor do EF Core (SaveChanges)
 - Nao faz parte do dominio — e infra pura (cross-cutting concern)
@@ -1090,8 +1131,8 @@ Para SaaS profissional e compliance, e necessario saber **quem fez o que e quand
 ### Tasks
 
 - [ ] **F4-T1**: Entidade AuditLog
-**Camada**: Infrastructure (NAO Domain — audit e infra)
-**Arquivo novo**: `src/Infrastructure/Audit/AuditLog.cs`
+  **Camada**: Infrastructure (NAO Domain — audit e infra)
+  **Arquivo novo**: `src/Infrastructure/Audit/AuditLog.cs`
 
 ```csharp
 public sealed class AuditLog
@@ -1112,15 +1153,17 @@ public sealed class AuditLog
 ---
 
 - [ ] **F4-T2**: SaveChanges Interceptor
-**Camada**: Infrastructure
-**Arquivo novo**: `src/Infrastructure/Audit/AuditSaveChangesInterceptor.cs`
+  **Camada**: Infrastructure
+  **Arquivo novo**: `src/Infrastructure/Audit/AuditSaveChangesInterceptor.cs`
 
 Usar `SaveChangesInterceptor` do EF Core para capturar todas as mudancas:
+
 - Entidades adicionadas: registrar `Acao = "Criou"`
 - Entidades modificadas: registrar `Acao = "Atualizou"` + JSON das propriedades alteradas
 - Extrair `UsuarioId` e `TenantId` do `ITenantProvider` e `IHttpContextAccessor`
 
 Registrar o interceptor no DI:
+
 ```csharp
 services.AddDbContext<AppDbContext>((sp, options) =>
     options.UseMySql(...)
@@ -1130,7 +1173,7 @@ services.AddDbContext<AppDbContext>((sp, options) =>
 ---
 
 - [ ] **F4-T3**: Endpoint e Tela de Audit
-**Camada**: Api + Web
+  **Camada**: Api + Web
 
 ```
 GET /api/audit-logs?entidade=OrdemServico&entidadeId={id}&page=1  → PagedResponse<AuditLogResponse>
@@ -1149,7 +1192,7 @@ Na `OrdemServicoDetalhePage.razor`: adicionar aba "Historico" mostrando quem alt
 ### Tasks
 
 - [ ] **F5-T1**: Interface de Geracao de PDF no Application
-**Arquivo**: `src/Application/Interfaces/IPdfService.cs`
+  **Arquivo**: `src/Application/Interfaces/IPdfService.cs`
 
 ```csharp
 public interface IPdfService
@@ -1161,9 +1204,10 @@ public interface IPdfService
 ```
 
 - [ ] **F5-T2**: Implementacao com QuestPDF
-**Pacote NuGet**: `QuestPDF` no Infrastructure.csproj
+  **Pacote NuGet**: `QuestPDF` no Infrastructure.csproj
 
 Templates (cada um como classe separada em `Infrastructure/Pdf/Templates/`):
+
 - Header: Logo da empresa (Tenant.LogoUrl) + dados + numero OS + data
 - Dados do cliente + equipamento
 - Tabelas: servicos, produtos, taxas
@@ -1172,6 +1216,7 @@ Templates (cada um como classe separada em `Infrastructure/Pdf/Templates/`):
 - Rodape com validade e espaco para assinatura
 
 - [ ] **F5-T3**: Endpoints de PDF
+
 ```
 GET /api/ordens-servico/{id:guid}/pdf/orcamento
 GET /api/ordens-servico/{id:guid}/pdf/os
@@ -1181,7 +1226,7 @@ GET /api/ordens-servico/{id:guid}/pdf/recibo
 Verificar `PlanoLimiteService.TemPdf` antes de gerar (plano Free nao tem).
 
 - [ ] **F5-T4**: Botoes de PDF no Blazor
-Adicionar na `OrdemServicoDetalhePage.razor`. Esconder botoes se plano nao suporta.
+  Adicionar na `OrdemServicoDetalhePage.razor`. Esconder botoes se plano nao suporta.
 
 ---
 
@@ -1190,6 +1235,7 @@ Adicionar na `OrdemServicoDetalhePage.razor`. Esconder botoes se plano nao supor
 ### Tasks
 
 - [ ] **F6-T1**: Interface e DTOs
+
 ```csharp
 public interface IEmailService
 {
@@ -1199,11 +1245,12 @@ public interface IEmailService
 ```
 
 - [ ] **F6-T2**: Implementacao SMTP/SendGrid
-**Arquivo**: `src/Infrastructure/Email/SmtpEmailService.cs`
+  **Arquivo**: `src/Infrastructure/Email/SmtpEmailService.cs`
 
 **EmailOptions** (appsettings): Host, Port, User, Password, FromAddress, FromName, HabilitarEnvio (bool — false em dev)
 
 **Templates HTML** (metodos retornando string interpolada):
+
 - `OrcamentoEnviado` — "Ola {cliente}, seu orcamento #{numero} no valor de {total} esta disponivel."
 - `StatusAlterado` — "Sua OS #{numero} mudou de {anterior} para {novo}."
 - `PagamentoRegistrado` — "Recebemos pagamento de {valor}. Restam {restante}."
@@ -1211,7 +1258,7 @@ public interface IEmailService
 - `RedefinicaoSenha` — "Clique no link para redefinir sua senha: {link}"
 
 - [ ] **F6-T3**: Disparar nos Services existentes
-**Regra**: Email e best-effort. Wrapar em try-catch, logar falhas, NUNCA bloquear a operacao.
+  **Regra**: Email e best-effort. Wrapar em try-catch, logar falhas, NUNCA bloquear a operacao.
 
 Verificar `PlanoLimiteService.TemEmail` antes de enviar (plano Free nao tem).
 
@@ -1222,7 +1269,8 @@ Verificar `PlanoLimiteService.TemEmail` antes de enviar (plano Free nao tem).
 ### Tasks
 
 - [ ] **F7-T1**: Service + Repository de Dashboard
-**DTOs**:
+  **DTOs**:
+
 ```csharp
 public sealed record DashboardResponse(
     int TotalOsAbertas,
@@ -1242,12 +1290,13 @@ public sealed record DashboardResponse(
 Queries otimizadas com `.AsNoTracking()`, `GroupBy`, `Sum`, projecoes (nao carregar entidades inteiras).
 
 - [ ] **F7-T2**: Endpoint
+
 ```
 GET /api/dashboard → DashboardResponse [Admin, Gerente]
 ```
 
 - [ ] **F7-T3**: Pagina Dashboard no Blazor
-Transformar `Home.razor` no dashboard com Radzen: cards KPI, donut por status, barra faturamento 30 dias.
+  Transformar `Home.razor` no dashboard com Radzen: cards KPI, donut por status, barra faturamento 30 dias.
 
 Mostrar dashboard diferente para SuperAdmin (metricas globais via `/api/admin/metricas`).
 
@@ -1258,9 +1307,10 @@ Mostrar dashboard diferente para SuperAdmin (metricas globais via `/api/admin/me
 ### Tasks
 
 - [ ] **F8-T1**: Signup Self-Service
-**Endpoint publico**: `POST /api/onboarding/signup`
+  **Endpoint publico**: `POST /api/onboarding/signup`
 
 **Fluxo**:
+
 1. Validar email unico (nao existe em nenhum tenant)
 2. Gerar slug a partir do nome da empresa
 3. Criar `Tenant`
@@ -1272,9 +1322,9 @@ Mostrar dashboard diferente para SuperAdmin (metricas globais via `/api/admin/me
 9. Retornar tokens + dados do tenant
 
 - [ ] **F8-T2**: Pagina de Signup
-Formulario: Nome da empresa, Email, Senha, Confirmar senha, Nome do responsavel. Selecao de plano com cards visuais mostrando features de cada plano.
-
+  Formulario: Nome da empresa, Email, Senha, Confirmar senha, Nome do responsavel. Selecao de plano com cards visuais mostrando features de cada plano.
 - [ ] **F8-T3**: Billing Service
+
 ```
 GET  /api/billing/plano     → PlanoResponse [Admin]
 PUT  /api/billing/plano     → AlterarPlanoAsync [Admin]
@@ -1284,6 +1334,7 @@ GET  /api/billing/planos    → ListarPlanosDisponiveisAsync [publico]
 Nesta fase, cobranca manual ou link externo. Integracao com gateway fica para Fase 2.
 
 - [ ] **F8-T4**: Limites por Plano (Enforcement)
+
 ```csharp
 public static PlanoLimites ObterLimites(PlanoTenant plano) => plano switch
 {
@@ -1298,7 +1349,7 @@ public static PlanoLimites ObterLimites(PlanoTenant plano) => plano switch
 Enforcement nos services: checar antes de `CriarAsync()` em OS e Usuario. Lancar `DomainException("Limite do plano atingido. Faca upgrade.")`.
 
 - [ ] **F8-T5**: Pagina Configuracoes / Minha Conta
-Secoes: Dados da Empresa, Plano Atual (com limites e uso), Minha Conta (alterar senha), Link para Usuarios.
+  Secoes: Dados da Empresa, Plano Atual (com limites e uso), Minha Conta (alterar senha), Link para Usuarios.
 
 ---
 
@@ -1363,49 +1414,49 @@ F8 (Onboarding + Billing)
 
 ## PACOTES NUGET
 
-| Projeto | Pacote | Motivo |
-|---------|--------|--------|
-| Api | `Serilog.AspNetCore` | Logging estruturado + request logging |
-| Api | `Microsoft.AspNetCore.Authentication.JwtBearer` | JWT auth middleware |
-| Infrastructure | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | Identity tables + UserManager |
-| Infrastructure | `Serilog.Sinks.Seq` | Sink para Seq (log viewer) |
-| Infrastructure | `Serilog.Sinks.File` | Sink para arquivo com rolling |
-| Infrastructure | `QuestPDF` | Geracao de PDF |
-| Web | `Serilog.AspNetCore` | Logging estruturado no Blazor |
-| Domain | Nenhum novo | Continua com zero deps |
-| Application | Nenhum novo | Continua apenas FluentValidation |
+| Projeto        | Pacote                                                | Motivo                                |
+| -------------- | ----------------------------------------------------- | ------------------------------------- |
+| Api            | `Serilog.AspNetCore`                                | Logging estruturado + request logging |
+| Api            | `Microsoft.AspNetCore.Authentication.JwtBearer`     | JWT auth middleware                   |
+| Infrastructure | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | Identity tables + UserManager         |
+| Infrastructure | `Serilog.Sinks.Seq`                                 | Sink para Seq (log viewer)            |
+| Infrastructure | `Serilog.Sinks.File`                                | Sink para arquivo com rolling         |
+| Infrastructure | `QuestPDF`                                          | Geracao de PDF                        |
+| Web            | `Serilog.AspNetCore`                                | Logging estruturado no Blazor         |
+| Domain         | Nenhum novo                                           | Continua com zero deps                |
+| Application    | Nenhum novo                                           | Continua apenas FluentValidation      |
 
 ---
 
 ## IMPACTO NAS ENTIDADES EXISTENTES
 
-| Entidade | Mudanca |
-|----------|---------|
-| Cliente | + `TenantId` (Guid, required). `Criar()` ganha parametro `tenantId`. |
-| Equipamento | + `TenantId`. `Criar()` ganha `tenantId`. |
-| OrdemServico | + `TenantId`. `Criar()` ganha `tenantId`. |
-| OrdemServicoAnotacao | `Autor` (string) → `AutorId` (Guid) + `AutorNome` (string). |
-| OrdemServicoServico | Sem mudanca. |
-| OrdemServicoProduto | Sem mudanca. |
-| OrdemServicoTaxa | Sem mudanca. |
-| OrdemServicoPagamento | Sem mudanca. |
-| OrdemServicoFoto | Sem mudanca. |
+| Entidade              | Mudanca                                                                   |
+| --------------------- | ------------------------------------------------------------------------- |
+| Cliente               | +`TenantId` (Guid, required). `Criar()` ganha parametro `tenantId`. |
+| Equipamento           | +`TenantId`. `Criar()` ganha `tenantId`.                            |
+| OrdemServico          | +`TenantId`. `Criar()` ganha `tenantId`.                            |
+| OrdemServicoAnotacao  | `Autor` (string) → `AutorId` (Guid) + `AutorNome` (string).        |
+| OrdemServicoServico   | Sem mudanca.                                                              |
+| OrdemServicoProduto   | Sem mudanca.                                                              |
+| OrdemServicoTaxa      | Sem mudanca.                                                              |
+| OrdemServicoPagamento | Sem mudanca.                                                              |
+| OrdemServicoFoto      | Sem mudanca.                                                              |
 
 ## IMPACTO NOS SERVICES
 
-| Service | Mudanca |
-|---------|---------|
-| ClienteService | + `ITenantProvider`. Passar `TenantId` no `Criar()`. |
-| EquipamentoService | + `ITenantProvider`. Passar `TenantId` no `Criar()`. |
-| OrdemServicoService | + `ITenantProvider`. Passar `TenantId` no `Criar()`. `AdicionarAnotacaoAsync` recebe `UsuarioId`. |
+| Service             | Mudanca                                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------------------------- |
+| ClienteService      | +`ITenantProvider`. Passar `TenantId` no `Criar()`.                                                  |
+| EquipamentoService  | +`ITenantProvider`. Passar `TenantId` no `Criar()`.                                                  |
+| OrdemServicoService | +`ITenantProvider`. Passar `TenantId` no `Criar()`. `AdicionarAnotacaoAsync` recebe `UsuarioId`. |
 
 ## IMPACTO NOS TESTES
 
-| Projeto | Mudanca |
-|---------|---------|
-| Domain.UnitTests | Factory methods agora exigem `tenantId`. Novos testes para Usuario, Tenant. |
+| Projeto               | Mudanca                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| Domain.UnitTests      | Factory methods agora exigem `tenantId`. Novos testes para Usuario, Tenant.           |
 | Application.UnitTests | Mock de `ITenantProvider`. Novos testes para Auth, UsuarioService, SuperAdminService. |
-| Web.UnitTests | Sem impacto direto (Web nao referencia Domain). |
+| Web.UnitTests         | Sem impacto direto (Web nao referencia Domain).                                         |
 
 ---
 
@@ -1444,12 +1495,12 @@ Novas secoes necessarias:
 
 ## RESUMO DE ARQUIVOS
 
-| Camada | Arquivos Novos | Modificados | Removidos |
-|--------|:-:|:-:|:-:|
-| Domain | ~10 | ~5 | 0 |
-| Application | ~30 | ~6 | 0 |
-| Infrastructure | ~19 | ~6 | 0 |
-| Api | ~6 | ~5 | 1 (RequestLoggingMiddleware) |
-| Web | ~25 | ~7 | 0 |
-| Tests | ~12 | ~8 | 0 |
-| **Total** | **~102** | **~37** | **1** |
+| Camada          | Arquivos Novos |  Modificados  |          Removidos          |
+| --------------- | :------------: | :-----------: | :--------------------------: |
+| Domain          |      ~10      |      ~5      |              0              |
+| Application     |      ~30      |      ~6      |              0              |
+| Infrastructure  |      ~19      |      ~6      |              0              |
+| Api             |       ~6       |      ~5      | 1 (RequestLoggingMiddleware) |
+| Web             |      ~25      |      ~7      |              0              |
+| Tests           |      ~12      |      ~8      |              0              |
+| **Total** | **~102** | **~37** |         **1**         |
