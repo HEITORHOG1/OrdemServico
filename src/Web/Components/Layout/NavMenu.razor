@@ -1,3 +1,7 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@inject Web.ViewModels.Auth.LoginViewModel LoginVM
+@inject NavigationManager Navigation
+
 <div class="sidebar-brand">
     <div class="brand-icon">
         <span class="material-icons">build_circle</span>
@@ -50,5 +54,36 @@
                 <span>Equipamentos</span>
             </NavLink>
         </div>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-section-label">CONTA</div>
+
+                <div class="nav-item px-3">
+                    <div class="nav-user-info">
+                        <span class="material-icons nav-icon">account_circle</span>
+                        <div class="nav-user-detail">
+                            <span class="nav-user-name">@context.User.FindFirst("email")?.Value</span>
+                            <span class="nav-user-role">@context.User.FindFirst("role")?.Value</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item px-3">
+                    <a class="nav-link" href="#" @onclick="HandleLogout" @onclick:preventDefault>
+                        <span class="material-icons nav-icon">logout</span>
+                        <span>Sair</span>
+                    </a>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </nav>
 </div>
+
+@code {
+    private async Task HandleLogout()
+    {
+        await LoginVM.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+}

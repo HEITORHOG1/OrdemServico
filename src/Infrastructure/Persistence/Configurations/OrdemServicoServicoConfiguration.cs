@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Configurations;
 
-public class OrdemServicoServicoConfiguration : IEntityTypeConfiguration<OrdemServicoServico>
+public sealed class OrdemServicoServicoConfiguration : IEntityTypeConfiguration<OrdemServicoServico>
 {
     public void Configure(EntityTypeBuilder<OrdemServicoServico> builder)
     {

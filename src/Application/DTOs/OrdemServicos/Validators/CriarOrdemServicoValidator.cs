@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Application.DTOs.OrdemServicos.Validators;
 
-public class CriarOrdemServicoValidator : AbstractValidator<CriarOrdemServicoRequest>
+public sealed class CriarOrdemServicoValidator : AbstractValidator<CriarOrdemServicoRequest>
 {
     public CriarOrdemServicoValidator()
     {

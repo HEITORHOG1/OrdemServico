@@ -1,7 +1,11 @@
+using System.Text;
 using Api.Endpoints;
 using Api.Options;
 using Application;
 using Infrastructure;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace Api.Extensions;
@@ -13,17 +17,54 @@ public static class ServiceCollectionExtensions
         services.Configure<CorsOptions>(configuration.GetSection(CorsOptions.SectionName));
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
 
+        // JWT Authentication
+        var jwtSection = configuration.GetSection(JwtOptions.SectionName);
+        var jwtOptions = jwtSection.Get<JwtOptions>()
+            ?? throw new InvalidOperationException("A secao 'Jwt' nao foi configurada.");
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtOptions.Issuer,
+                ValidAudience = jwtOptions.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("AdminOuSuperAdmin", policy =>
+                policy.RequireAssertion(context =>
+                {
+                    var roleClaim = context.User.FindFirst("role")?.Value;
+                    return roleClaim is "SuperAdmin" or "Admin";
+                }));
+        });
+
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Ordem de Serviço API", Version = "v1" });
 
-            c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Name = "X-Api-Key",
-                Type = SecuritySchemeType.ApiKey,
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Chave de API para acesso aos endpoints protegidos"
+                Description = "Insira o token JWT"
             });
 
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -34,7 +75,7 @@ public static class ServiceCollectionExtensions
                         Reference = new OpenApiReference
                         {
                             Type = ReferenceType.SecurityScheme,
-                            Id = "ApiKey"
+                            Id = "Bearer"
                         }
                     },
                     Array.Empty<string>()

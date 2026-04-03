@@ -1,8 +1,10 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
+using Web.Services.Auth;
 
 namespace Web.Services.Api;
 
@@ -15,15 +17,18 @@ public sealed class ApiClient : IApiClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IApiErrorParser _apiErrorParser;
     private readonly ApiSettings _apiSettings;
+    private readonly TokenStorage _tokenStorage;
 
     public ApiClient(
         IHttpClientFactory httpClientFactory,
         IApiErrorParser apiErrorParser,
-        IOptions<ApiSettings> apiSettings)
+        IOptions<ApiSettings> apiSettings,
+        TokenStorage tokenStorage)
     {
         _httpClientFactory = httpClientFactory;
         _apiErrorParser = apiErrorParser;
         _apiSettings = apiSettings.Value;
+        _tokenStorage = tokenStorage;
     }
 
     public async Task<ApiResult<JsonObject>> GetObjectAsync(string path, CancellationToken cancellationToken = default)
@@ -296,6 +301,11 @@ public sealed class ApiClient : IApiClient
         if (!string.IsNullOrWhiteSpace(_apiSettings.ApiKey) && !request.Headers.Contains(ApiKeyHeaderName))
         {
             request.Headers.TryAddWithoutValidation(ApiKeyHeaderName, _apiSettings.ApiKey);
+        }
+
+        if (!string.IsNullOrWhiteSpace(_tokenStorage.AccessToken))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _tokenStorage.AccessToken);
         }
     }
 }

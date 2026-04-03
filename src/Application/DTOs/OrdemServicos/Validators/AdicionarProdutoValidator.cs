@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Application.DTOs.OrdemServicos.Validators;
 
-public class AdicionarProdutoValidator : AbstractValidator<AdicionarProdutoRequest>
+public sealed class AdicionarProdutoValidator : AbstractValidator<AdicionarProdutoRequest>
 {
     public AdicionarProdutoValidator()
     {

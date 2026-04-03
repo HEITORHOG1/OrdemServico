@@ -1,0 +1,42 @@
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+}
+
+::deep .login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem;
+}
+
+::deep .login-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+::deep .login-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+::deep .login-icon {
+    font-size: 3rem;
+    color: #1a237e;
+}
+
+::deep .login-header h2 {
+    margin: 0.5rem 0 0;
+    font-weight: 700;
+    color: #1a237e;
+}
+
+::deep .login-subtitle {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}

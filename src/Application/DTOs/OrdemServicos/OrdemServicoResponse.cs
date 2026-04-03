@@ -26,7 +26,3 @@ public record OrdemServicoResponse(
     IReadOnlyCollection<OrdemServicoPagamentoResponse> Pagamentos
 );
 
-public record OrdemServicoServicoResponse(Guid Id, string Descricao, int Quantidade, decimal ValorUnitario, decimal Subtotal);
-public record OrdemServicoProdutoResponse(Guid Id, string Descricao, int Quantidade, decimal ValorUnitario, decimal Subtotal);
-public record OrdemServicoTaxaResponse(Guid Id, string Descricao, decimal Valor);
-public record OrdemServicoPagamentoResponse(Guid Id, MeioPagamento MeioPagamento, decimal Valor, DateTime DataPagamento);

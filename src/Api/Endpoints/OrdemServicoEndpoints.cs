@@ -9,7 +9,7 @@ public static class OrdemServicoEndpoints
 {
     public static void MapOrdemServicoEndpoints(this IEndpointRouteBuilder routes)
     {
-        var grid = routes.MapGroup("/api/ordens-servico").WithTags("Ordens de Serviço");
+        var grid = routes.MapGroup("/api/ordens-servico").WithTags("Ordens de Serviço").RequireAuthorization();
 
         grid.MapPost("/", async (CriarOrdemServicoRequest request, IOrdemServicoService service, CancellationToken ct) =>
         {

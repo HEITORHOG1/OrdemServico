@@ -1,27 +1,40 @@
 @inherits LayoutComponentBase
+@inject NavigationManager Navigation
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <div class="d-flex align-items-center gap-2">
-                <span class="material-icons" style="font-size: 1.1rem; color: var(--os-text-muted);">notifications_none</span>
-                <span class="top-row-label">Sistema de Ordem de Servico</span>
+<AuthorizeView>
+    <Authorized>
+        <div class="page">
+            <div class="sidebar">
+                <NavMenu />
             </div>
+
+            <main>
+                <div class="top-row px-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-icons" style="font-size: 1.1rem; color: var(--os-text-muted);">notifications_none</span>
+                        <span class="top-row-label">Sistema de Ordem de Servico</span>
+                    </div>
+                </div>
+
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
-
-<RadzenNotification />
-<RadzenDialog />
-<RadzenComponents />
+        <RadzenNotification />
+        <RadzenDialog />
+        <RadzenComponents />
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+    <Authorizing>
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+            <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 200px" />
+        </div>
+    </Authorizing>
+</AuthorizeView>
 
 <div id="blazor-error-ui" data-nosnippet>
     Ocorreu um erro inesperado.

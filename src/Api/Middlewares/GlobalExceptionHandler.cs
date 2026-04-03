@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Middlewares;
 
-public class GlobalExceptionHandler : IExceptionHandler
+public sealed class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;
     private const string CorrelationIdHeader = "X-Correlation-Id";
