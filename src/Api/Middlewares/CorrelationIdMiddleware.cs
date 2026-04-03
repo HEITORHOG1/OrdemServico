@@ -1,6 +1,6 @@
 namespace Api.Middlewares;
 
-public class CorrelationIdMiddleware
+public sealed class CorrelationIdMiddleware
 {
     private readonly RequestDelegate _next;
     private const string CorrelationIdHeader = "X-Correlation-Id";

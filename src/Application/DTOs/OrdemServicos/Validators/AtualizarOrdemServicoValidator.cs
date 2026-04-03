@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Application.DTOs.OrdemServicos.Validators;
 
-public class AtualizarOrdemServicoValidator : AbstractValidator<AtualizarOrdemServicoRequest>
+public sealed class AtualizarOrdemServicoValidator : AbstractValidator<AtualizarOrdemServicoRequest>
 {
     public AtualizarOrdemServicoValidator()
     {

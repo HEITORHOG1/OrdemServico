@@ -9,7 +9,7 @@ public static class EquipamentoEndpoints
 {
     public static void MapEquipamentoEndpoints(this IEndpointRouteBuilder routes)
     {
-        var grid = routes.MapGroup("/api/equipamentos").WithTags("Equipamentos");
+        var grid = routes.MapGroup("/api/equipamentos").WithTags("Equipamentos").RequireAuthorization();
 
         grid.MapPost("/", async (CriarEquipamentoRequest request, IEquipamentoService service, CancellationToken ct) =>
         {

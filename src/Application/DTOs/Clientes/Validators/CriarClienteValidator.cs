@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Application.DTOs.Clientes.Validators;
 
-public class CriarClienteValidator : AbstractValidator<CriarClienteRequest>
+public sealed class CriarClienteValidator : AbstractValidator<CriarClienteRequest>
 {
     public CriarClienteValidator()
     {

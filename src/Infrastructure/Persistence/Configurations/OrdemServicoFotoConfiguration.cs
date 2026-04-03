@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Configurations;
 
-public class OrdemServicoFotoConfiguration : IEntityTypeConfiguration<OrdemServicoFoto>
+public sealed class OrdemServicoFotoConfiguration : IEntityTypeConfiguration<OrdemServicoFoto>
 {
     public void Configure(EntityTypeBuilder<OrdemServicoFoto> builder)
     {

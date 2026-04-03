@@ -8,7 +8,7 @@ public static class ClienteEndpoints
 {
     public static void MapClienteEndpoints(this IEndpointRouteBuilder routes)
     {
-        var grid = routes.MapGroup("/api/clientes").WithTags("Clientes");
+        var grid = routes.MapGroup("/api/clientes").WithTags("Clientes").RequireAuthorization();
 
         grid.MapPost("/", async (CriarClienteRequest request, IClienteService service, CancellationToken ct) =>
         {

@@ -26,8 +26,8 @@
 
 ## Progresso Geral
 
-- [ ] **F0** — Logging Estruturado (Serilog) — 8 tasks
-- [ ] **F1** — Autenticacao (Identity + JWT) — 9 tasks
+- [x] **F0** — Logging Estruturado (Serilog) — 8/8 tasks
+- [x] **F1** — Autenticacao (Identity + JWT) — 9/9 tasks
 - [ ] **F2** — Multi-Tenancy — 9 tasks
 - [ ] **F3** — Usuarios, Roles e Super Admin — 8 tasks
 - [ ] **F4** — Audit Trail — 3 tasks
@@ -36,7 +36,7 @@
 - [ ] **F7** — Dashboard com KPIs — 3 tasks
 - [ ] **F8** — Onboarding + Billing — 5 tasks
 
-> **Total: 0/52 tasks concluidas**
+> **Total: 17/52 tasks concluidas**
 
 ---
 
@@ -86,7 +86,7 @@ Serilog e a lib padrao do ecossistema .NET para isso. Deve ser a **primeira feat
 
 ### Tasks
 
-- [ ] **F0-T1**: Pacotes NuGet
+- [x] **F0-T1**: Pacotes NuGet
 
 **Api.csproj**:
 
@@ -105,7 +105,7 @@ Serilog e a lib padrao do ecossistema .NET para isso. Deve ser a **primeira feat
 
 ---
 
-- [ ] **F0-T2**: Configuracao do Serilog no Program.cs da API
+- [x] **F0-T2**: Configuracao do Serilog no Program.cs da API
 
 **Arquivo modificado**: `src/Api/Program.cs`
 
@@ -150,7 +150,7 @@ finally
 
 ---
 
-- [ ] **F0-T3**: Configuracao no appsettings.json
+- [x] **F0-T3**: Configuracao no appsettings.json
 
 **Arquivo modificado**: `src/Api/appsettings.json`
 
@@ -209,7 +209,7 @@ finally
 
 ---
 
-- [ ] **F0-T4**: Remover RequestLoggingMiddleware manual
+- [x] **F0-T4**: Remover RequestLoggingMiddleware manual
 
 **Arquivo a remover**: `src/Api/Middlewares/RequestLoggingMiddleware.cs`
 
@@ -232,7 +232,7 @@ O `CorrelationIdMiddleware` continua — ele gera o header. O Serilog apenas le 
 
 ---
 
-- [ ] **F0-T5**: Enricher customizado de TenantId/UsuarioId
+- [x] **F0-T5**: Enricher customizado de TenantId/UsuarioId
 
 **Arquivo novo**: `src/Infrastructure/Logging/TenantLogEnricher.cs`
 
@@ -267,7 +267,7 @@ public sealed class TenantLogEnricher : ILogEventEnricher
 
 ---
 
-- [ ] **F0-T6**: Logging estruturado nos Services existentes
+- [x] **F0-T6**: Logging estruturado nos Services existentes
 
 Revisar os services para usar logging com propriedades estruturadas em vez de interpolacao:
 
@@ -288,7 +288,7 @@ Adicionar logs em pontos criticos:
 
 ---
 
-- [ ] **F0-T7**: Serilog no Web (Blazor)
+- [x] **F0-T7**: Serilog no Web (Blazor)
 
 **Arquivo modificado**: `src/Web/Program.cs`
 
@@ -312,7 +312,7 @@ O Blazor Server tambem se beneficia do Serilog: exceptions em componentes, circu
 
 ---
 
-- [ ] **F0-T8**: Docker Compose — Seq (opcional, recomendado)
+- [x] **F0-T8**: Docker Compose — Seq (opcional, recomendado)
 
 **Arquivo modificado**: `docker-compose.yml`
 
@@ -372,7 +372,7 @@ Hoje o sistema usa apenas um header `X-Api-Key` compartilhado. Para SaaS, cada u
 
 ### Tasks
 
-- [ ] **F1-T1**: Entidade Usuario no Domain
+- [x] **F1-T1**: Entidade Usuario no Domain
   **Camada**: Domain
   **Arquivo**: `src/Domain/Entities/Usuario.cs`
 
@@ -407,7 +407,7 @@ Propriedades:
 
 ---
 
-- [ ] **F1-T2**: Enum CargoUsuario
+- [x] **F1-T2**: Enum CargoUsuario
   **Camada**: Domain
   **Arquivo**: `src/Domain/Enums/CargoUsuario.cs`
 
@@ -428,7 +428,7 @@ public enum CargoUsuario
 
 ---
 
-- [ ] **F1-T3**: Configuracao do ASP.NET Identity
+- [x] **F1-T3**: Configuracao do ASP.NET Identity
   **Camada**: Infrastructure
   **Arquivos novos**:
 
@@ -459,7 +459,7 @@ Depois: public class AppDbContext : IdentityDbContext<AppIdentityUser>
 
 ---
 
-- [ ] **F1-T4**: Servico de Autenticacao na Application
+- [x] **F1-T4**: Servico de Autenticacao na Application
   **Camada**: Application
   **Arquivos novos**:
 
@@ -517,7 +517,7 @@ Task RedefinirSenhaAsync(RedefinirSenhaRequest request, CancellationToken ct = d
 
 ---
 
-- [ ] **F1-T5**: Geracao de JWT na Infrastructure
+- [x] **F1-T5**: Geracao de JWT na Infrastructure
   **Camada**: Infrastructure
   **Arquivos novos**:
 
@@ -563,7 +563,7 @@ new Claim("is_super_admin", usuario.EhSuperAdmin().ToString())
 
 ---
 
-- [ ] **F1-T6**: Endpoints de Auth na API
+- [x] **F1-T6**: Endpoints de Auth na API
   **Camada**: Api
   **Arquivo novo**: `src/Api/Endpoints/AuthEndpoints.cs`
 
@@ -587,7 +587,7 @@ POST /api/auth/redefinir-senha   → RedefinirSenhaAsync       [publico, com tok
 
 ---
 
-- [ ] **F1-T7**: Auth no Blazor Web
+- [x] **F1-T7**: Auth no Blazor Web
   **Camada**: Web
   **Arquivos novos**:
 
@@ -614,7 +614,7 @@ POST /api/auth/redefinir-senha   → RedefinirSenhaAsync       [publico, com tok
 
 ---
 
-- [ ] **F1-T8**: Seed do Super Admin
+- [x] **F1-T8**: Seed do Super Admin
   **Camada**: Infrastructure
   **Arquivo modificado**: `src/Infrastructure/Persistence/DatabaseSeeder.cs`
 
@@ -631,7 +631,7 @@ No `SeedAsync()`, criar o primeiro SuperAdmin se nao existir:
 
 ---
 
-- [ ] **F1-T9**: Testes de Auth
+- [x] **F1-T9**: Testes de Auth
   **Camada**: Tests
 
 - `tests/Domain.UnitTests/Entities/UsuarioTests.cs`:

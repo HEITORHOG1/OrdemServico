@@ -1,21 +1,41 @@
 using Domain.Entities;
 using Domain.Enums;
 using Domain.ValueObjects;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Persistence;
 
-public sealed class DatabaseSeeder
+public sealed partial class DatabaseSeeder
 {
     private readonly AppDbContext _context;
+    private readonly UserManager<AppIdentityUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<DatabaseSeeder> _logger;
 
-    public DatabaseSeeder(AppDbContext context)
+    public DatabaseSeeder(
+        AppDbContext context,
+        UserManager<AppIdentityUser> userManager,
+        RoleManager<IdentityRole> roleManager,
+        IConfiguration configuration,
+        ILogger<DatabaseSeeder> logger)
     {
         _context = context;
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
+        await SeedRolesAsync();
+        await SeedSuperAdminAsync(cancellationToken);
+
         if (await _context.Clientes.AnyAsync(cancellationToken))
         {
             return;
@@ -39,6 +59,56 @@ public sealed class DatabaseSeeder
         await _context.SaveChangesAsync(cancellationToken);
 
         await ExecutarSeedAsync(cancellationToken);
+    }
+
+    private async Task SeedRolesAsync()
+    {
+        string[] cargos = ["SuperAdmin", "Admin", "Gerente", "Tecnico", "Atendente"];
+
+        foreach (var cargo in cargos)
+        {
+            if (!await _roleManager.RoleExistsAsync(cargo))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(cargo));
+                LogRoleCriada(_logger, cargo);
+            }
+        }
+    }
+
+    private async Task SeedSuperAdminAsync(CancellationToken cancellationToken)
+    {
+        var email = _configuration["SuperAdmin:Email"] ?? "admin@ordemservico.com";
+        var senha = _configuration["SuperAdmin:Password"] ?? "Admin@123456";
+
+        if (await _context.Usuarios.AnyAsync(u => u.Cargo == CargoUsuario.SuperAdmin, cancellationToken))
+            return;
+
+        var identityUser = await _userManager.FindByEmailAsync(email);
+        if (identityUser is null)
+        {
+            identityUser = new AppIdentityUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(identityUser, senha);
+            if (!result.Succeeded)
+            {
+                LogSuperAdminFalha(_logger, email, string.Join(", ", result.Errors.Select(e => e.Description)));
+                return;
+            }
+        }
+
+        if (!await _userManager.IsInRoleAsync(identityUser, "SuperAdmin"))
+            await _userManager.AddToRoleAsync(identityUser, "SuperAdmin");
+
+        var usuario = Usuario.Criar("Super Administrador", email, CargoUsuario.SuperAdmin, identityUser.Id, null);
+        await _context.Usuarios.AddAsync(usuario, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        LogSuperAdminCriado(_logger, email);
     }
 
     private async Task ExecutarSeedAsync(CancellationToken cancellationToken)
@@ -202,4 +272,13 @@ public sealed class DatabaseSeeder
         await _context.OrdensServico.AddRangeAsync(new[] { os1, os2, os3, os4, os5, os6, os7, os8 }, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Role '{Cargo}' criada com sucesso")]
+    private static partial void LogRoleCriada(ILogger logger, string cargo);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Super Admin criado com sucesso: {Email}")]
+    private static partial void LogSuperAdminCriado(ILogger logger, string email);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Falha ao criar Super Admin '{Email}': {Erros}")]
+    private static partial void LogSuperAdminFalha(ILogger logger, string email, string erros);
 }

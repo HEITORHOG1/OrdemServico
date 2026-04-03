@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Configurations;
 
-public class EquipamentoConfiguration : IEntityTypeConfiguration<Equipamento>
+public sealed class EquipamentoConfiguration : IEntityTypeConfiguration<Equipamento>
 {
     public void Configure(EntityTypeBuilder<Equipamento> builder)
     {

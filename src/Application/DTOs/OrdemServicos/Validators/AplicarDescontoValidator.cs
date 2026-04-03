@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace Application.DTOs.OrdemServicos.Validators;
 
-public class AplicarDescontoValidator : AbstractValidator<AplicarDescontoRequest>
+public sealed class AplicarDescontoValidator : AbstractValidator<AplicarDescontoRequest>
 {
     public AplicarDescontoValidator()
     {

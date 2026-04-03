@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Application.DTOs.OrdemServicos.Validators;
 
-public class AdicionarServicoValidator : AbstractValidator<AdicionarServicoRequest>
+public sealed class AdicionarServicoValidator : AbstractValidator<AdicionarServicoRequest>
 {
     public AdicionarServicoValidator()
     {

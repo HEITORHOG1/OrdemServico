@@ -3,11 +3,14 @@ using Web.Models;
 using Web.Models.Requests;
 using Web.Models.Responses;
 using Web.Services.Api;
+using Web.Services.Auth;
 using Web.Services.Ui;
 using Web.State;
+using Web.ViewModels.Auth;
 using Web.ViewModels.Clientes;
 using Web.ViewModels.Equipamentos;
 using Web.ViewModels.OrdensServico;
+using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
 using System.Net;
 using System.Text.Json.Nodes;
@@ -33,6 +36,12 @@ builder.Services.AddRazorComponents()
 
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
 builder.Services.AddRadzenComponents();
+// Auth services
+builder.Services.AddScoped<TokenStorage>();
+builder.Services.AddScoped<AuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
+builder.Services.AddAuthorizationCore();
+
 builder.Services.AddHttpClient("OsApi", (serviceProvider, client) =>
 {
     var settings = serviceProvider
@@ -42,16 +51,19 @@ builder.Services.AddHttpClient("OsApi", (serviceProvider, client) =>
     client.BaseAddress = new Uri(settings.BaseUrl);
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+
 builder.Services.AddScoped<IApiStatusService, ApiStatusService>();
 builder.Services.AddScoped<IApiErrorParser, ApiErrorParser>();
 builder.Services.AddScoped<IApiClient, ApiClient>();
 builder.Services.AddScoped<IAppNotifier, AppNotifier>();
+builder.Services.AddScoped<IAuthApi, AuthApi>();
 builder.Services.AddScoped<IClientesApi, ClientesApi>();
 builder.Services.AddScoped<IEquipamentosApi, EquipamentosApi>();
 builder.Services.AddScoped<IOrdensServicoApi, OrdensServicoApi>();
 builder.Services.AddScoped<ClienteFlowState>();
 builder.Services.AddScoped<EquipamentoFlowState>();
 builder.Services.AddScoped<OrdemServicoFlowState>();
+builder.Services.AddScoped<LoginViewModel>();
 builder.Services.AddScoped<ClienteCadastroViewModel>();
 builder.Services.AddScoped<EquipamentosViewModel>();
 builder.Services.AddScoped<OrdemServicoCadastroViewModel>();
@@ -69,7 +81,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 
 app.UseAntiforgery();
 

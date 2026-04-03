@@ -30,11 +30,14 @@ public static class WebApplicationExtensions
         // Custom Middlewares
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseCors("ApiCorsPolicy");
-        app.UseMiddleware<ApiKeyAuthMiddleware>();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.UseHttpsRedirection();
 
         // Endpoints genéricos (minimal APIs root extension methods)
+        app.MapAuthEndpoints();
         app.MapClienteEndpoints();
         app.MapEquipamentoEndpoints();
         app.MapOrdemServicoEndpoints();

@@ -1,0 +1,58 @@
+@page "/login"
+@using Web.ViewModels.Auth
+@layout Web.Components.Layout.LoginLayout
+@rendermode InteractiveServer
+@inject LoginViewModel VM
+@inject NavigationManager Navigation
+
+<PageTitle>Login - OS Web</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <span class="material-icons login-icon">build_circle</span>
+            <h2>OS Web</h2>
+            <p class="login-subtitle">Ordem de Servico</p>
+        </div>
+
+        <RadzenTemplateForm TItem="LoginFormModel" Data="@VM.Form" Submit="@HandleLogin">
+            <div class="rz-p-2" style="display: flex; flex-direction: column; gap: 1rem;">
+                <RadzenFormField Text="Email" Style="width: 100%">
+                    <RadzenTextBox Name="Email" @bind-Value="VM.Form.Email" Placeholder="seu@email.com" />
+                </RadzenFormField>
+                <RadzenRequiredValidator Component="Email" Text="Email e obrigatorio." Popup="false" Style="position: static; font-size: 0.8rem;" />
+
+                <RadzenFormField Text="Senha" Style="width: 100%">
+                    <RadzenPassword Name="Senha" @bind-Value="VM.Form.Senha" Placeholder="Sua senha" />
+                </RadzenFormField>
+                <RadzenRequiredValidator Component="Senha" Text="Senha e obrigatoria." Popup="false" Style="position: static; font-size: 0.8rem;" />
+
+                @if (!string.IsNullOrWhiteSpace(VM.ErrorMessage))
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Danger" ShowIcon="true" Shade="Shade.Lighter" AllowClose="false">
+                        @VM.ErrorMessage
+                    </RadzenAlert>
+                }
+
+                <RadzenButton Text="@(VM.IsSubmitting ? "Entrando..." : "Entrar")"
+                              Icon="login"
+                              ButtonType="ButtonType.Submit"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Style="width: 100%"
+                              IsBusy="@VM.IsSubmitting"
+                              Disabled="@VM.IsSubmitting" />
+            </div>
+        </RadzenTemplateForm>
+    </div>
+</div>
+
+@code {
+    private async Task HandleLogin(LoginFormModel _)
+    {
+        var result = await VM.LoginAsync();
+        if (result.Succeeded)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+}
